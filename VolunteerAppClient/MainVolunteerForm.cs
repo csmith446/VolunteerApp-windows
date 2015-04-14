@@ -7,18 +7,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Hik.Communication.Scs.Communication.EndPoints.Tcp;
+using Hik.Communication.ScsServices.Client;
+using VolunteerAppCommonLib;
 
 namespace VolunteerAppClient
 {
     public partial class MainVolunteerForm : Form
     {
+        private static IScsServiceClient<IVolunteerServer> Server;
+       
+        //[todo] get rid of redundant lists
         private List<int> SelectedEventIds;     //list for 'saving' selected events when sorting
-        private List<User> UserList;            //main User list - pulled form database
-        private List<Event> EventList;          //main event list - pulled from database
+        private List<UserInfo> UserList;            //main User list - pulled form database
+        private List<EventInfo> EventList;          //main event list - pulled from database
         private List<ListViewItem> RegisteredEventItems;
 
         private LoginForm LoginForm;
-        private User CurrentUser;
+        private UserInfo CurrentUser;
 
         private enum OrderBy
         {
@@ -30,12 +36,15 @@ namespace VolunteerAppClient
             DateDesc
         };
 
-        public MainVolunteerForm(User user, LoginForm loginScreen)
+        public MainVolunteerForm(UserInfo user, LoginForm loginScreen, 
+            IScsServiceClient<IVolunteerServer> server)
         {
             InitializeComponent();
+            CurrentUser = user;
             LoginForm = loginScreen;
+            Server = server;
 
-            UpdateLists(user);
+            UpdateLists();
             SetLoggedInUserName();
             SetAdminStatus();
 
@@ -44,34 +53,11 @@ namespace VolunteerAppClient
         }
 
         //Ties all of the events' users and users' events together
-        private void UpdateLists(User user)
+        private void UpdateLists()
         {
-            UserList = DatabaseManager.GetAllUsers();
-            EventList = DatabaseManager.GetAllEvents();
-
-            foreach (var usr in UserList)
-            {
-                foreach (var evt in EventList)
-                {
-                    if (evt.Creator.Id == usr.Id)
-                    {
-                        usr.CreatedEvents.Add(evt);
-                        usr.RegisteredEvents.Add(evt);
-
-                        evt.RegisteredUsers.Add(usr);
-                        evt.UpdateCreator(usr);
-                    }
-                    else if (DatabaseManager.IsUserRegisteredForEvent(evt.Id, usr.Id))
-                    {
-                        usr.RegisteredEvents.Add(evt);
-                        evt.RegisteredUsers.Add(usr);
-                    }
-                }
-
-                if (usr.Id == user.Id)
-                    CurrentUser = usr;
-            }
-
+//            Server.ServiceProxy.GetCurrentLists(ref EventList, ref UserList, ref CurrentUser);
+            UserList = Server.ServiceProxy.GetUpdatedUsers();
+            EventList = Server.ServiceProxy.GetUpdatedEvents();
             SetRegisteredCountLable();
         }
 
@@ -85,7 +71,8 @@ namespace VolunteerAppClient
 
         private void SetRegisteredCountLable()
         {
-            int events = DatabaseManager.GetRegisteredCountForUser(CurrentUser.Id);
+            //int events = Server.ServiceProxy.GetRegisteredCountForUser(CurrentUser.Id);
+            int events = CurrentUser.RegisteredEvents.Count;
             RegisteredEventCountLabel.Text = string.Format("Registered for {0} upcoming events", events);
         }
 
@@ -150,7 +137,7 @@ namespace VolunteerAppClient
 
                 if (SelectedEventIds.Contains(evt.Id)) item.Checked = true;
 
-                if (DatabaseManager.IsUserRegisteredForEvent(evt.Id, CurrentUser.Id))
+                if (evt.RegisteredUsers.Contains(CurrentUser.Id))
                     RegisteredEventItems.Add(item);
                 else
                     VolunteerEventsListView.Items.Add(item);
@@ -235,6 +222,9 @@ namespace VolunteerAppClient
 
         private void MainWindow_FormClosed(object sender, FormClosedEventArgs e)
         {
+            Server.ServiceProxy.UserLoggedOut();
+            Server.Disconnect();
+
             if (UserLoggedOut)
                 LoginForm.Show();
             else
@@ -355,13 +345,13 @@ namespace VolunteerAppClient
 
             foreach (ListViewItem item in VolunteerEventsListView.CheckedItems)
             {
-                DatabaseManager.RegisterUserForEvent(CurrentUser.Id, Int32.Parse(item.SubItems[8].Text));
+                Server.ServiceProxy.RegisterUserForEvent(CurrentUser.Id, Int32.Parse(item.SubItems[8].Text));
             }
 
             MessageBox.Show(string.Format("You registered for {0} events!", VolunteerEventsListView.CheckedItems.Count));
             ClearSelectedEvents();
             LoadCurrentEvents(HideRegisteredEventsCheckBox.Checked, CurrentOrder);
-            UpdateLists(CurrentUser);
+            UpdateLists();
         }
 
         private void EventNameHeaderButton_Click(object sender, EventArgs e)
@@ -397,15 +387,15 @@ namespace VolunteerAppClient
         //create a user
         private DialogResult ShowCreateUserForm()
         {
-            var createUserForm = new CreateUserForm();
+            var createUserForm = new CreateUserForm(Server);
             createUserForm.ShowDialog();
             return createUserForm.DialogResult;
         }
 
         //edit a user
-        private DialogResult ShowUserForm(User usr, bool adminEdit = false)
+        private DialogResult ShowUserForm(UserInfo usr, bool adminEdit = false)
         {
-            var viewUserForm = new ViewUserForm(usr, adminEdit);
+            var viewUserForm = new ViewUserForm(usr, adminEdit, Server);
             viewUserForm.ShowDialog(this);
             return viewUserForm.DialogResult;
         }
@@ -413,7 +403,7 @@ namespace VolunteerAppClient
         //create an event
         private DialogResult ShowCreateEventForm()
         {
-            var createEventForm = new CreateEventForm(CurrentUser);
+            var createEventForm = new CreateEventForm(CurrentUser, Server);
             createEventForm.ShowDialog();
             return createEventForm.DialogResult;
         }
@@ -425,7 +415,7 @@ namespace VolunteerAppClient
                 Int32.Parse(UserCreatedEventsListView.SelectedItems[0].SubItems[4].Text) :
                 Int32.Parse(UserRegisteredEventsListView.SelectedItems[0].SubItems[3].Text);
             var events = (readOnly) ? CurrentUser.RegisteredEvents : CurrentUser.CreatedEvents;
-            Event selectedEvent = null;
+            EventInfo selectedEvent = null;
 
             foreach (var evt in events)
             {
@@ -436,7 +426,7 @@ namespace VolunteerAppClient
                 }
             }
 
-            var eventForm = new ViewEventForm(selectedEvent, readOnly);
+            var eventForm = new ViewEventForm(selectedEvent, readOnly, Server);
             eventForm.ShowDialog();
             return eventForm.DialogResult;
         }
@@ -655,7 +645,7 @@ namespace VolunteerAppClient
         {
             var selectedId =
                 Int32.Parse(AdminUserListView.SelectedItems[0].SubItems[4].Text);
-            User selectedUser = null;
+            UserInfo selectedUser = null;
 
             foreach (var user in UserList)
             {
@@ -675,7 +665,7 @@ namespace VolunteerAppClient
         {
             var selectedId =
                 Int32.Parse(AdminEventListView.SelectedItems[0].SubItems[3].Text);
-            Event selectedEvent = null;
+            EventInfo selectedEvent = null;
 
             foreach (var evt in EventList)
             {
@@ -686,9 +676,9 @@ namespace VolunteerAppClient
                 }
             }
 
-            var eventForm = new ViewEventForm(selectedEvent, false);
+            var eventForm = new ViewEventForm(selectedEvent, false, Server);
             eventForm.ShowDialog();
-            UpdateLists(CurrentUser);
+            UpdateLists();
         }
 
         private void DeleteSelectedEventButton_Click(object sender, EventArgs e)

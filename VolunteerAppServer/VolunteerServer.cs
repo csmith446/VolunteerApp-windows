@@ -16,18 +16,22 @@ namespace VolunteerAppServer
     public partial class VolunteerServer : Form
     {
         private IScsServiceApplication Server;
+        private ServerService ServerSvc;
 
         public VolunteerServer()
         {
             InitializeComponent();
             Server = ScsServiceBuilder.CreateService(new ScsTcpEndPoint(31415));
-            Server.AddService<IVolunteerServer, ServerService>(new ServerService());
+            ServerSvc = new ServerService(this);
+
+            Server.AddService<IVolunteerServer, ServerService>(ServerSvc);
             Server.ClientConnected += Server_ClientConnected;
             Server.ClientDisconnected += Server_ClientDisconnected;
+
         }
 
         private delegate void LogMessageCallBack(string msg);
-        private void LogMessage(string msg)
+        public void LogMessage(string msg)
         {
             if (ServerLogListBox.InvokeRequired)
             {
@@ -54,12 +58,12 @@ namespace VolunteerAppServer
 
         void Server_ClientDisconnected(object sender, ServiceClientEventArgs e)
         {
-            LogMessage("Client disconnected");
+            //LogMessage("Connection ended");
         }
 
         void Server_ClientConnected(object sender, ServiceClientEventArgs e)
         {
-            LogMessage("Client connected");
+            //LogMessage("Connection requested...");
         }
 
         private void ControlButton_Click(object sender, EventArgs e)
@@ -68,17 +72,24 @@ namespace VolunteerAppServer
             {
                 Server.Start();
                 LogMessage(">> Server Started");
-                ServerToolstripLabel.Text = "Server : Running";
+                ServerToolstripLabel.Text = "Server : Loading...";
+                Task getLists = new Task(() =>
+                {
+                    LogMessage(">> Retrieving data from database...");
+                    ServerSvc.GetCurrentLists();
+                    LogMessage(">> Done. Listening for connections...");
+                    ServerToolstripLabel.Text = "Server : Running";
+                });
+                getLists.Start();
 
                 ControlButton.Text = "Stop";
                 ControlButton.BackColor = Color.LightCoral;
-
             }
             else
             {
                 Server.Stop();
                 LogMessage(">> Server Stopped");
-                ServerToolstripLabel.Text = "Server : Ready";
+                ServerToolstripLabel.Text = "Server : Stopped";
 
                 ControlButton.Text = "Start";
                 ControlButton.BackColor = Color.LightGreen;

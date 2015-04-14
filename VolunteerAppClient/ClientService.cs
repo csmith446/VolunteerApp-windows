@@ -17,10 +17,7 @@ namespace VolunteerAppClient
         }
 
         #region IVolunteerClient Methods
-        public void ShowMainWindow(bool result)
-        {
-            MainLogin.ShowLoginResult(result);
-        }
+        //methods the server would call on the client
         #endregion
     }
 }

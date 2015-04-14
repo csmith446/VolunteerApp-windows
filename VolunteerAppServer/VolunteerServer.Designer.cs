@@ -31,14 +31,14 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(VolunteerServer));
             this.ServerMenuStrip = new System.Windows.Forms.MenuStrip();
             this.FileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ExitMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.HelpMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.AboutMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ServerStatusStrip = new System.Windows.Forms.StatusStrip();
             this.ServerToolstripLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.ControlButton = new System.Windows.Forms.Button();
             this.ServerLogListBox = new System.Windows.Forms.ListBox();
             this.ClearLogButton = new System.Windows.Forms.Button();
-            this.ExitMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.AboutMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ServerMenuStrip.SuspendLayout();
             this.ServerStatusStrip.SuspendLayout();
             this.SuspendLayout();
@@ -63,6 +63,13 @@
             this.FileMenuItem.Size = new System.Drawing.Size(37, 20);
             this.FileMenuItem.Text = "File";
             // 
+            // ExitMenuItem
+            // 
+            this.ExitMenuItem.Name = "ExitMenuItem";
+            this.ExitMenuItem.Size = new System.Drawing.Size(92, 22);
+            this.ExitMenuItem.Text = "Exit";
+            this.ExitMenuItem.Click += new System.EventHandler(this.ExitMenuItem_Click);
+            // 
             // HelpMenuItem
             // 
             this.HelpMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -70,6 +77,13 @@
             this.HelpMenuItem.Name = "HelpMenuItem";
             this.HelpMenuItem.Size = new System.Drawing.Size(44, 20);
             this.HelpMenuItem.Text = "Help";
+            // 
+            // AboutMenuItem
+            // 
+            this.AboutMenuItem.Name = "AboutMenuItem";
+            this.AboutMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.AboutMenuItem.Text = "About";
+            this.AboutMenuItem.Click += new System.EventHandler(this.AboutMenuItem_Click);
             // 
             // ServerStatusStrip
             // 
@@ -86,8 +100,8 @@
             // 
             this.ServerToolstripLabel.Margin = new System.Windows.Forms.Padding(10, 3, 0, 2);
             this.ServerToolstripLabel.Name = "ServerToolstripLabel";
-            this.ServerToolstripLabel.Size = new System.Drawing.Size(80, 17);
-            this.ServerToolstripLabel.Text = "Server : Ready";
+            this.ServerToolstripLabel.Size = new System.Drawing.Size(92, 17);
+            this.ServerToolstripLabel.Text = "Server : Stopped";
             // 
             // ControlButton
             // 
@@ -121,20 +135,6 @@
             this.ClearLogButton.Text = "Clear Log";
             this.ClearLogButton.UseVisualStyleBackColor = false;
             this.ClearLogButton.Click += new System.EventHandler(this.ClearLogButton_Click);
-            // 
-            // ExitMenuItem
-            // 
-            this.ExitMenuItem.Name = "ExitMenuItem";
-            this.ExitMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.ExitMenuItem.Text = "Exit";
-            this.ExitMenuItem.Click += new System.EventHandler(this.ExitMenuItem_Click);
-            // 
-            // AboutMenuItem
-            // 
-            this.AboutMenuItem.Name = "AboutMenuItem";
-            this.AboutMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.AboutMenuItem.Text = "About";
-            this.AboutMenuItem.Click += new System.EventHandler(this.AboutMenuItem_Click);
             // 
             // VolunteerServer
             // 
