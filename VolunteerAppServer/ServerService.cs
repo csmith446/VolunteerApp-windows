@@ -93,6 +93,7 @@ namespace VolunteerAppServer
 
                 ConnectedClients[client.ClientId] = volunteerClient;
                 ServerForm.LogMessage("Connection granted : " + username);
+                ServerForm.CurrentUsersStatusLabel.Text = "Connected Users : " + ConnectedClients.Count.ToString();
                 return true;
             }
             else return false;
@@ -102,6 +103,9 @@ namespace VolunteerAppServer
         {
             var User = ConnectedClients[CurrentClient.ClientId].User;
             ServerForm.LogMessage("Conncetion closed : " + User.Username);
+
+            ConnectedClients.Remove(CurrentClient.ClientId);
+            ServerForm.CurrentUsersStatusLabel.Text = "Connected Users : " + ConnectedClients.Count.ToString();
         }
 
         public void RegisterNewUser(string username, string password, string firstName,

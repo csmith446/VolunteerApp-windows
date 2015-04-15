@@ -35,10 +35,11 @@
             this.HelpMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.AboutMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ServerStatusStrip = new System.Windows.Forms.StatusStrip();
-            this.ServerToolstripLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.ServerStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.ControlButton = new System.Windows.Forms.Button();
             this.ServerLogListBox = new System.Windows.Forms.ListBox();
             this.ClearLogButton = new System.Windows.Forms.Button();
+            this.CurrentUsersStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.ServerMenuStrip.SuspendLayout();
             this.ServerStatusStrip.SuspendLayout();
             this.SuspendLayout();
@@ -88,7 +89,8 @@
             // ServerStatusStrip
             // 
             this.ServerStatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ServerToolstripLabel});
+            this.ServerStatusLabel,
+            this.CurrentUsersStatusLabel});
             this.ServerStatusStrip.Location = new System.Drawing.Point(0, 242);
             this.ServerStatusStrip.Name = "ServerStatusStrip";
             this.ServerStatusStrip.Size = new System.Drawing.Size(478, 22);
@@ -96,12 +98,14 @@
             this.ServerStatusStrip.TabIndex = 1;
             this.ServerStatusStrip.Text = "statusStrip1";
             // 
-            // ServerToolstripLabel
+            // ServerStatusLabel
             // 
-            this.ServerToolstripLabel.Margin = new System.Windows.Forms.Padding(10, 3, 0, 2);
-            this.ServerToolstripLabel.Name = "ServerToolstripLabel";
-            this.ServerToolstripLabel.Size = new System.Drawing.Size(92, 17);
-            this.ServerToolstripLabel.Text = "Server : Stopped";
+            this.ServerStatusLabel.AutoSize = false;
+            this.ServerStatusLabel.Margin = new System.Windows.Forms.Padding(10, 3, 0, 2);
+            this.ServerStatusLabel.Name = "ServerStatusLabel";
+            this.ServerStatusLabel.Size = new System.Drawing.Size(150, 17);
+            this.ServerStatusLabel.Text = "Server : Stopped";
+            this.ServerStatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // ControlButton
             // 
@@ -136,6 +140,15 @@
             this.ClearLogButton.UseVisualStyleBackColor = false;
             this.ClearLogButton.Click += new System.EventHandler(this.ClearLogButton_Click);
             // 
+            // CurrentUsersStatusLabel
+            // 
+            this.CurrentUsersStatusLabel.AutoSize = false;
+            this.CurrentUsersStatusLabel.Margin = new System.Windows.Forms.Padding(180, 3, 0, 2);
+            this.CurrentUsersStatusLabel.Name = "CurrentUsersStatusLabel";
+            this.CurrentUsersStatusLabel.Size = new System.Drawing.Size(135, 17);
+            this.CurrentUsersStatusLabel.Text = "Connected Users: 0";
+            this.CurrentUsersStatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
             // VolunteerServer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -168,11 +181,12 @@
         private System.Windows.Forms.ToolStripMenuItem ExitMenuItem;
         private System.Windows.Forms.ToolStripMenuItem HelpMenuItem;
         private System.Windows.Forms.StatusStrip ServerStatusStrip;
-        private System.Windows.Forms.ToolStripStatusLabel ServerToolstripLabel;
+        private System.Windows.Forms.ToolStripStatusLabel ServerStatusLabel;
         private System.Windows.Forms.Button ControlButton;
         private System.Windows.Forms.ListBox ServerLogListBox;
         private System.Windows.Forms.Button ClearLogButton;
         private System.Windows.Forms.ToolStripMenuItem AboutMenuItem;
+        public System.Windows.Forms.ToolStripStatusLabel CurrentUsersStatusLabel;
     }
 }
 

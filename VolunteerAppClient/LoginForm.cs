@@ -30,6 +30,7 @@ namespace VolunteerAppClient
             Client = new ClientService(this);
             Server = ScsServiceClientBuilder.CreateClient<IVolunteerServer>(
                 new ScsTcpEndPoint("127.0.0.1", 31415), Client);
+            Server.ConnectTimeout = 5000;
 
             Server.Connected += Server_Connected;
             Server.Disconnected += Server_Disconnected;
@@ -63,38 +64,46 @@ namespace VolunteerAppClient
 
         private void BeginUserLogin()
         {
-            Server.Connect();
-            string username = EmailAddressTextBox.Text.ToLower();
-            string password = PasswordTextBox.Text;
-
-            if (ValidateForm(username, password))
+            try
             {
-                if (UserLoggedIn(username, password))
-                {
-                    var user = Server.ServiceProxy.GetLoggedOnUser();
-                    var mainForm = new MainVolunteerForm(user, this, Server);
-                    ErrorMessageLabel.Visible = false;
+                Server.Connect();
+                string username = EmailAddressTextBox.Text.ToLower();
+                string password = PasswordTextBox.Text;
 
-                    this.Hide();
-                    mainForm.ShowDialog();
+                if (ValidateForm(username, password))
+                {
+                    if (UserLoggedIn(username, password))
+                    {
+                        var user = Server.ServiceProxy.GetLoggedOnUser();
+                        var mainForm = new MainVolunteerForm(user, this, Server);
+                        ErrorMessageLabel.Visible = false;
+
+                        this.Hide();
+                        mainForm.ShowDialog();
+                    }
+                    else
+                    {
+                        ErrorMessageLabel.Text = "The email and password do not match.";
+                        ErrorMessageLabel.Visible = true;
+                        Server.Disconnect();
+                    }
                 }
                 else
                 {
-                    ErrorMessageLabel.Text = "The email and password do not match.";
+                    ErrorMessageLabel.Text = "The email and password cannot be blank.";
                     ErrorMessageLabel.Visible = true;
                     Server.Disconnect();
                 }
-            }
-            else
-            {
-                ErrorMessageLabel.Text = "The email and password cannot be blank.";
-                ErrorMessageLabel.Visible = true;
-                Server.Disconnect();
-            }
 
-            EmailAddressTextBox.Clear();
-            PasswordTextBox.Clear();
-            EmailAddressTextBox.Focus();
+                EmailAddressTextBox.Clear();
+                PasswordTextBox.Clear();
+                EmailAddressTextBox.Focus();
+            }
+            catch
+            {
+                //connection timeout
+                MessageBox.Show("Oops! The server appears to be down.");
+            }
         }
 
         private void LoginButton_Click(object sender, EventArgs e)

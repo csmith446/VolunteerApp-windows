@@ -72,13 +72,13 @@ namespace VolunteerAppServer
             {
                 Server.Start();
                 LogMessage(">> Server Started");
-                ServerToolstripLabel.Text = "Server : Loading...";
+                ServerStatusLabel.Text = "Server : Loading...";
                 Task getLists = new Task(() =>
                 {
                     LogMessage(">> Retrieving data from database...");
                     ServerSvc.GetCurrentLists();
                     LogMessage(">> Done. Listening for connections...");
-                    ServerToolstripLabel.Text = "Server : Running";
+                    ServerStatusLabel.Text = "Server : Running";
                 });
                 getLists.Start();
 
@@ -89,7 +89,7 @@ namespace VolunteerAppServer
             {
                 Server.Stop();
                 LogMessage(">> Server Stopped");
-                ServerToolstripLabel.Text = "Server : Stopped";
+                ServerStatusLabel.Text = "Server : Stopped";
 
                 ControlButton.Text = "Start";
                 ControlButton.BackColor = Color.LightGreen;

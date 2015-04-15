@@ -40,6 +40,13 @@ namespace VolunteerAppClient
             IScsServiceClient<IVolunteerServer> server)
         {
             InitializeComponent();
+
+            SetDoubleBuffered(VolunteerEventsListView);
+            SetDoubleBuffered(UserCreatedEventsListView);
+            SetDoubleBuffered(UserRegisteredEventsListView);
+            SetDoubleBuffered(AdminEventListView);
+            SetDoubleBuffered(AdminUserListView);
+
             CurrentUser = user;
             LoginForm = loginScreen;
             Server = server;
@@ -52,10 +59,19 @@ namespace VolunteerAppClient
             LoadCurrentEvents(HideRegisteredEventsCheckBox.Checked);
         }
 
-        //Ties all of the events' users and users' events together
+        public static void SetDoubleBuffered(Control control)
+        {
+            System.Reflection.PropertyInfo aProp =
+                  typeof(System.Windows.Forms.Control).GetProperty(
+                        "DoubleBuffered",
+                        System.Reflection.BindingFlags.NonPublic |
+                        System.Reflection.BindingFlags.Instance);
+
+            aProp.SetValue(control, true, null);
+        }
+
         private void UpdateLists()
         {
-//            Server.ServiceProxy.GetCurrentLists(ref EventList, ref UserList, ref CurrentUser);
             UserList = Server.ServiceProxy.GetUpdatedUsers();
             EventList = Server.ServiceProxy.GetUpdatedEvents();
             SetRegisteredCountLable();
