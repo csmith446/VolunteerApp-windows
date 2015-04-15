@@ -7,9 +7,9 @@ namespace VolunteerAppClient
 {
     internal class ClientService : IVolunteerClient
     {
-        private IScsServiceClient<IVolunteerServer> _Server;
+        //private IScsServiceClient<IVolunteerServer> _Server;
         private LoginForm MainLogin;
-        private UserInfo _CurrentUser;
+        //private UserInfo _CurrentUser;
 
         public ClientService(LoginForm Login)
         {

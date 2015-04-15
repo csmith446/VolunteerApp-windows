@@ -248,7 +248,8 @@ namespace VolunteerAppServer
             {
                 string query = "SELECT Users.ID, Users.Username, Users.FirstName, " +
                     "Users.LastName, ContactInfo.PhoneNumber, Users.Isadmin FROM " +
-                    "Users JOIN ContactInfo ON Users.ContactInfoID = ContactInfo.ID";
+                    "Users JOIN ContactInfo ON Users.ContactInfoID = ContactInfo.ID " +
+                    "ORDER BY Users.Username";
                 var cmd = connection.CreateCommand();
                 cmd.CommandText = query;
                 var da = new SQLiteDataAdapter(cmd);

@@ -59,7 +59,7 @@ namespace VolunteerAppClient
             return false;
         }
 
-        private void ProcessRegistration()
+        private void ProcessNewUserCreation()
         {
             if (ValidateForm())
             {
@@ -70,7 +70,7 @@ namespace VolunteerAppClient
             }
         }
 
-        private void CloseRegistrationForm()
+        private void CloseNewUserForm()
         {
             this.Close();
         }
@@ -177,8 +177,8 @@ namespace VolunteerAppClient
 
         private void SetErrorForControl(Control control, string error = "")
         {
-            ErrorProvider.SetError(control, error);
-            ErrorProvider.SetIconPadding(control, 10);
+            NewUserErrorProvider.SetError(control, error);
+            NewUserErrorProvider.SetIconPadding(control, 10);
         }
 
         private void ValidateFirstName_Validating(object sender, CancelEventArgs e)
@@ -209,7 +209,7 @@ namespace VolunteerAppClient
                 SetErrorForControl(PhoneNumberTextBox, PHONE_ERROR);
             else
             {
-                ErrorProvider.SetError(PhoneNumberTextBox, "");
+                SetErrorForControl(PhoneNumberTextBox);
                 PhoneNumberTextBox.Text = FormatPhoneNumber(Int64.Parse(PhoneNumberTextBox.Text));
             }
         }
@@ -269,30 +269,25 @@ namespace VolunteerAppClient
                 e.Handled = true;
         }
 
-        private void RegistrationForm_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyData == Keys.Escape)
-                CloseRegistrationForm();
-            else if (e.KeyData == Keys.Enter || e.KeyData == Keys.Return)
-                ProcessRegistration();
-        }
-
         private void ConfirmPasswordTextBox_KeyUp(object sender, KeyEventArgs e)
         {
-            if (!ValidateConfirmedPassword() && PasswordIsValid)
-                SetErrorForControl(ConfirmPasswordTextBox, CONFIRM_ERROR);
-            else
-                SetErrorForControl(ConfirmPasswordTextBox);
+            if (ConfirmPasswordTextBox.Text.Length >= PasswordTextBox.Text.Length)
+            {
+                if (!ValidateConfirmedPassword() && PasswordIsValid)
+                    SetErrorForControl(ConfirmPasswordTextBox, CONFIRM_ERROR);
+                else
+                    SetErrorForControl(ConfirmPasswordTextBox);
+            }
         }
 
         private void CancelNewUserButton_Click(object sender, EventArgs e)
         {
-            CloseRegistrationForm();
+            CloseNewUserForm();
         }
 
         private void CreateUserButton_Click(object sender, EventArgs e)
         {
-            ProcessRegistration();
+            ProcessNewUserCreation();
 
         }
     }

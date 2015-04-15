@@ -189,8 +189,10 @@ namespace VolunteerAppClient
             this.Close();
         }
 
+        private bool Canceled = false;
         private void CancelRegistrationButton_Click(object sender, EventArgs e)
         {
+            Canceled = true;
             CloseRegistrationForm();
         }
 
@@ -255,7 +257,7 @@ namespace VolunteerAppClient
                 SetErrorForControl(PhoneNumberTextBox, PHONE_ERROR);
             else
             {
-                MainErrorProvider.SetError(PhoneNumberTextBox, "");
+                SetErrorForControl(PhoneNumberTextBox);
                 PhoneNumberTextBox.Text = FormatPhoneNumber(Int64.Parse(PhoneNumberTextBox.Text));
             }
         }
@@ -300,18 +302,24 @@ namespace VolunteerAppClient
 
         private void ConfirmPasswordTextBox_KeyUp(object sender, KeyEventArgs e)
         {
-            if (!ValidateConfirmedPassword() && PasswordIsValid)
-                SetErrorForControl(ConfirmPasswordTextBox, CONFIRM_ERROR);
-            else
-                SetErrorForControl(ConfirmPasswordTextBox);
+            if (ConfirmPasswordTextBox.Text.Length >= PasswordTextBox.Text.Length)
+            {
+                if (!ValidateConfirmedPassword() && PasswordIsValid)
+                    SetErrorForControl(ConfirmPasswordTextBox, CONFIRM_ERROR);
+                else
+                    SetErrorForControl(ConfirmPasswordTextBox);
+            }
         }
 
         private void RegistrationForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             //todo: center messagebox on parent or create form for messagebox
-            if (MessageBox.Show(this, "Are you sure you want to cancel your registration?",
-                "Cancel Registration", MessageBoxButtons.YesNo) == DialogResult.No)
-                e.Cancel = true;
+            if (Canceled)
+            {
+                if (MessageBox.Show(this, "Are you sure you want to cancel your registration?",
+                    "Cancel Registration", MessageBoxButtons.YesNo) == DialogResult.No)
+                    e.Cancel = true;
+            }
         }
     }
 }

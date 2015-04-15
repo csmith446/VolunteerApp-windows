@@ -409,9 +409,9 @@ namespace VolunteerAppClient
         }
 
         //edit a user
-        private DialogResult ShowUserForm(UserInfo usr, bool adminEdit = false)
+        private DialogResult ShowUserForm(UserInfo usr, bool adminEdit = false, bool self = false)
         {
-            var viewUserForm = new ViewUserForm(usr, adminEdit, Server);
+            var viewUserForm = new ViewUserForm(usr, adminEdit, Server, self);
             viewUserForm.ShowDialog(this);
             return viewUserForm.DialogResult;
         }
@@ -449,7 +449,7 @@ namespace VolunteerAppClient
 
         private void UpdateInformationMenuItem_Click(object sender, EventArgs e)
         {
-            ShowUserForm(CurrentUser);
+            ShowUserForm(CurrentUser, false, true);
             //todo: dialog result: if OK then
             //UpdateLists(CurrentUser);
         }
@@ -477,6 +477,7 @@ namespace VolunteerAppClient
                 item.SubItems.Add(user.CreatedEvents.Count.ToString());
                 item.SubItems.Add(user.RegisteredEvents.Count.ToString());
                 item.SubItems.Add(user.Id.ToString());
+                item.SubItems.Add(user.IsAdmin.ToString());
                 AdminUserListView.Items.Add(item);
             }
 
@@ -639,7 +640,9 @@ namespace VolunteerAppClient
         private void AdminUserListView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
             AdminEditUserButton.Enabled = AdminUserListView.SelectedItems.Count > 0;
-            AdminDeleteUserButton.Enabled = AdminUserListView.SelectedItems.Count > 0;
+            AdminDeleteUserButton.Enabled = AdminUserListView.SelectedItems.Count > 0
+                && e.Item.SubItems[5].Text != "True";
+
             if (e.IsSelected)
             {
                 AdminUserCreatedEvents.Text = e.Item.SubItems[2].Text;
@@ -672,7 +675,7 @@ namespace VolunteerAppClient
                 }
             }
 
-            ShowUserForm(selectedUser, true);
+            ShowUserForm(selectedUser, true, selectedUser.Username == CurrentUser.Username);
             //todo: diagog result: if OK then
             //UpdateLists(CurrentUser);
         }
