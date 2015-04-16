@@ -13,6 +13,13 @@ namespace VolunteerAppCommonLib
         List<EventInfo> GetUpdatedEvents();
         List<UserInfo> GetUpdatedUsers();
         void UserLoggedOut();
+        void UpdateUserInfo(int userId, string username, string firstName, string lastName,
+            bool isAdmin, string phoneNumber, string hashedPassword = null);
+        void UpdateEventInfo(int eventId, string name, string date, string time,
+            string duration, string location);
+        void CreateNewEvent(int userId, string name, string date, string time,
+            string duration, string location);
+
 
         void RegisterNewUser(string username, string password, string firstName,
             string lastName, string phoneNumber, bool admin);

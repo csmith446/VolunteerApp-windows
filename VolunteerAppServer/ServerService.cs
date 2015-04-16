@@ -43,24 +43,24 @@ namespace VolunteerAppServer
             AllUsersList = DatabaseManager.GetAllUsers();
             AllEventsList = DatabaseManager.GetAllEvents();
 
-            foreach (var usr in AllUsersList)
-            {
-                foreach (var evt in AllEventsList)
-                {
-                    if (evt.Creator.Id == usr.Id)
-                    {
-                        usr.CreatedEvents.Add(evt);
-                        usr.RegisteredEvents.Add(evt);
+            //foreach (var usr in AllUsersList)
+            //{
+            //    foreach (var evt in AllEventsList)
+            //    {
+            //        if (evt.Creator.Id == usr.Id)
+            //        {
+            //            usr.CreatedEvents.Add(evt);
+            //            usr.RegisteredEvents.Add(evt);
 
-                        evt.RegisteredUsers.Add(usr.Id);
-                        evt.UpdateCreator(usr);
-                    }
-                    else if (DatabaseManager.IsUserRegisteredForEvent(evt.Id, usr.Id))
-                    {
-                        usr.RegisteredEvents.Add(evt);
-                        evt.RegisteredUsers.Add(usr.Id);
-                    }
-                }
+            //            evt.RegisteredUsers.Add(usr.Id);
+            //            evt.UpdateCreator(usr);
+            //        }
+            //        else if (DatabaseManager.IsUserRegisteredForEvent(evt.Id, usr.Id))
+            //        {
+            //            usr.RegisteredEvents.Add(evt);
+            //            evt.RegisteredUsers.Add(usr.Id);
+            //        }
+            //    }
             }
         }
 
@@ -106,6 +106,28 @@ namespace VolunteerAppServer
 
             ConnectedClients.Remove(CurrentClient.ClientId);
             ServerForm.CurrentUsersStatusLabel.Text = "Connected Users : " + ConnectedClients.Count.ToString();
+        }
+
+        void UpdateUserInfo(int userId, string username, string firstName, string lastName,
+            bool isAdmin, string phoneNumber, string hashedPassword = null)
+        {
+            DatabaseManager.UpdateUserInformation(userId, username, firstName, 
+                lastName, isAdmin, phoneNumber, hashedPassword);
+
+        }
+
+        void UpdateEventInfo(int eventId, string name, string date, string time,
+            string duration, string location)
+        {
+            DatabaseManager.UpdateEventInformation(eventId, name, date,
+                time, duration, location);
+        }
+
+        void CreateNewEvent(int userId, string name, string date, string time,
+            string duration, string location)
+        {
+            DatabaseManager.CreateNewEvent(userId, name, date, time,
+                duration, location);
         }
 
         public void RegisterNewUser(string username, string password, string firstName,

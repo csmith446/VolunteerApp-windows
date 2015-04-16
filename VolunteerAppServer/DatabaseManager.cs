@@ -47,7 +47,6 @@ namespace VolunteerAppServer
 
                 return (cmd.ExecuteScalar().ToString() == TRUE);
             }
-
         }
 
         /// <summary>
@@ -134,17 +133,17 @@ namespace VolunteerAppServer
         /// <summary>
         /// Registers a user for an event.
         /// </summary>
-        /// <param name="user_id"></param>
-        /// <param name="event_id"></param>
-        static public void RegisterUserForEvent(int user_id, int event_id)
+        /// <param name="userId"></param>
+        /// <param name="eventId"></param>
+        static public void RegisterUserForEvent(int userId, int eventId)
         {
             using (var connection = GetConnection())
             {
                 string query = "INSERT INTO Registered_Events(EventID,UserID) VALUES(@eId,@uId)";
                 var cmd = connection.CreateCommand();
                 cmd.CommandText = query;
-                cmd.Parameters.AddWithValue("@uId", user_id);
-                cmd.Parameters.AddWithValue("@eId", event_id);
+                cmd.Parameters.AddWithValue("@uId", userId);
+                cmd.Parameters.AddWithValue("@eId", eventId);
 
                 cmd.ExecuteNonQuery();
             }
@@ -308,6 +307,22 @@ namespace VolunteerAppServer
             return result;
         }
 
+        static public int GetEventIDFromName(string name)
+        {
+            int result = -1;
+            using (var connection = GetConnection())
+            {
+                string query = "SELECT Events.ID FROM Events WHERE Events.Name = @name";
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = query;
+                cmd.Parameters.AddWithValue("@name", name);
+
+                result = Int32.Parse(cmd.ExecuteScalar().ToString());
+            }
+
+            return result;
+        }
+
         static public int GetContactIDForUser(UserInfo user)
         {
             int result = -1;
@@ -327,7 +342,7 @@ namespace VolunteerAppServer
         static public int GetRegisteredCountForUser(int userId)
         {
             int result = -1;
-            using(var connection = GetConnection())
+            using (var connection = GetConnection())
             {
                 string query = "SELECT COUNT(Registered_Events.EventID) FROM " +
                     "Registered_Events JOIN Users ON Registered_Events.UserID = " +
@@ -340,6 +355,114 @@ namespace VolunteerAppServer
             }
 
             return result;
+        }
+
+        static public int GetContactIDForUser(int userId)
+        {
+            int result = -1;
+            using (var connection = GetConnection())
+            {
+                string query = "SELECT Users.ContactInfoID FROM Users WHERE Users.ID = @userId";
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = query;
+                cmd.Parameters.AddWithValue("@userId", userId);
+
+                result = Int32.Parse(cmd.ExecuteScalar().ToString());
+            }
+
+            return result;
+        }
+
+
+
+        static public void CreateNewEvent(int userId, string name, string date, string time,
+            string duration, string location)
+        {
+            using (var connection = GetConnection())
+            {
+                string query = "INSERT INTO Events (Name, Date, Time, Duration, " +
+                    "Location, ContactInfoID) VALUES (@name, @date, @time, @duration, " +
+                    "@location, @contactId)";
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = query;
+                cmd.Parameters.AddWithValue("@name", name);
+                cmd.Parameters.AddWithValue("@date", date);
+                cmd.Parameters.AddWithValue("@time", time);
+                cmd.Parameters.AddWithValue("@duration", duration);
+                cmd.Parameters.AddWithValue("@location", location);
+                cmd.Parameters.AddWithValue("@contactId", userId);
+
+                cmd.ExecuteNonQuery();
+                RegisterUserForEvent(userId, GetEventIDFromName(name));
+            }
+        }
+
+        static public void UpdateEventInformation(int eventId, string name, string date, string time,
+            string duration, string location)
+        {
+            using (var connection = GetConnection())
+            {
+                string query = "update Events set Name=@name, Date=@date, Time=@time, " +
+                    "Duration=@duration, Location=@location where ID = @eventId";
+
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = query;
+                cmd.Parameters.AddWithValue("@name", name);
+                cmd.Parameters.AddWithValue("@date", date);
+                cmd.Parameters.AddWithValue("@time", time);
+                cmd.Parameters.AddWithValue("@duration", duration);
+                cmd.Parameters.AddWithValue("@location", location);
+                cmd.Parameters.AddWithValue("@eventId", eventId);
+
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        static public void UpdateUserContactInfo(int contactId, string email, string phoneNumber)
+        {
+            using (var connection = GetConnection())
+            {
+                string query = "update ContactInfo set EmailAddress=@email, " +
+                    "PhoneNumber=@phone where ID = @contactId";
+
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = query;
+                cmd.Parameters.AddWithValue("@email", email);
+                cmd.Parameters.AddWithValue("@phone", phoneNumber);
+                cmd.Parameters.AddWithValue("@contactId", contactId);
+
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        static public void UpdateUserInformation(int userId, string username, string firstName, string lastName,
+            bool isAdmin, string phoneNumber, string hashedPassword)
+        {
+            using (var connection = GetConnection())
+            {
+                var cmd = connection.CreateCommand();
+                var admin = (isAdmin) ? "1" : "0";
+
+                string query = (hashedPassword != null) ?
+                    "update Users set Username=@username, Password=@password, " +
+                    "FirstName=@firstName, LastName=@lastName, IsAdmin=@isAdmin " +
+                    "where ID = @userId" :
+                    "update Users set Username=@username, " +
+                    "FirstName=@firstName, LastName=@lastName, IsAdmin=@isAdmin " +
+                    "where ID = @userId";
+
+                cmd.CommandText = query;
+                cmd.Parameters.AddWithValue("@username", username);
+                cmd.Parameters.AddWithValue("@firstName", firstName);
+                cmd.Parameters.AddWithValue("@lastName", lastName);
+                cmd.Parameters.AddWithValue("@isAdmin", admin);
+                cmd.Parameters.AddWithValue("@userId", userId);
+
+                if (hashedPassword != null) cmd.Parameters.AddWithValue("@password", hashedPassword);
+
+                cmd.ExecuteNonQuery();
+                UpdateUserContactInfo(GetContactIDForUser(userId), username, phoneNumber);
+            }
         }
     }
 }

@@ -36,7 +36,7 @@ namespace VolunteerAppCommonLib
             this._RegisteredUsers = new List<int>();
         }
 
-        #region gets/sets
+        #region public gets/sets
         public int Id
         {
             get { return this._Id; }

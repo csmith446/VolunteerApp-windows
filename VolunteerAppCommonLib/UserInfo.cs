@@ -15,8 +15,8 @@ namespace VolunteerAppCommonLib
         private string _PhoneNumber { set; get; }
         private bool _IsAdmin { get; set; }
         private Tuple<string, string> _FullName { set; get; }
-        private List<EventInfo> _CreatedEvents { get; set; }
-        private List<EventInfo> _RegisteredEvents { get; set; }
+        private List<int> _CreatedEvents { get; set; }
+        private List<int> _RegisteredEvents { get; set; }
         #endregion
 
         public UserInfo(int id, string username, string firstName, string lastName,
@@ -27,18 +27,18 @@ namespace VolunteerAppCommonLib
             this._PhoneNumber = phoneNumber;
             this._IsAdmin = isAdmin;
             this._FullName = new Tuple<string, string>(firstName, lastName);
-            this._CreatedEvents = new List<EventInfo>();
-            this._RegisteredEvents = new List<EventInfo>();
+            this._CreatedEvents = new List<int>();
+            this._RegisteredEvents = new List<int>();
         }
 
         #region gets/sets
-        public List<EventInfo> RegisteredEvents
+        public List<int> RegisteredEvents
         {
             get { return this._RegisteredEvents; }
             set { this._RegisteredEvents = value; }
         }
 
-        public List<EventInfo> CreatedEvents
+        public List<int> CreatedEvents
         {
             get { return this._CreatedEvents; }
             set { this._CreatedEvents = value; }
