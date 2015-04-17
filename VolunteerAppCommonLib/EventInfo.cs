@@ -18,12 +18,12 @@ namespace VolunteerAppCommonLib
         private DateTime _StartTime { get; set; }
         private DateTime _EndTime { get; set; }
         private string _Location { get; set; }
-        private UserInfo _Creator { get; set; }
+        private int _UserInfoId { get; set; }
         private List<int> _RegisteredUsers { get; set; }
         #endregion
 
         public EventInfo(int id, string name, string date,
-            string time, string location, double duration, UserInfo contact)
+            string time, string location, double duration, int userId)
         {
             this._Id = id;
             this._Name = name;
@@ -32,7 +32,7 @@ namespace VolunteerAppCommonLib
             this._Duration = duration;
             this._EndTime = this._StartTime.AddHours(duration);
             this._Location = location;
-            this._Creator = contact;
+            this._UserInfoId = userId;
             this._RegisteredUsers = new List<int>();
         }
 
@@ -72,16 +72,16 @@ namespace VolunteerAppCommonLib
             get { return this._Location; }
         }
 
-        public UserInfo Creator
+        public int CreatorId
         {
-            get { return this._Creator; }
+            get { return this._UserInfoId; }
         }
         #endregion / setters
 
-        public void UpdateCreator(UserInfo user)
-        {
-            this._Creator = user;
-        }
+        //public void UpdateCreator(UserInfo user)
+        //{
+        //    this._UserInfoId = user;
+        //}
 
         public List<int> RegisteredUsers
         {

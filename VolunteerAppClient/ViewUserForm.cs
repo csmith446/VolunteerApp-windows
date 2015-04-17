@@ -24,7 +24,7 @@ namespace VolunteerAppClient
         private const string EMAIL_INUSE_ERROR = "The email address you provided is already in use.";
         private const string PASSWORD_ERROR = "Your password must be at least 6 characters long.";
         private const string CONFIRM_ERROR = "Your confirmed password and password do not match.";
-		
+
         //todo: input validation, error provider, and save changes functionality
         //todo: dialog result
         private IScsServiceClient<IVolunteerServer> Server;
@@ -63,9 +63,23 @@ namespace VolunteerAppClient
             IsAdminCheckBox.Checked = UserToEdit.IsAdmin;
         }
 
+        private bool CheckForChanges()
+        {
+            if (FirstNameTextBox.Text != UserToEdit.FullName.Item1 ||
+                LastNameTextBox.Text != UserToEdit.FullName.Item2 ||
+                EmailAddressTextBox.Text != UserToEdit.Username ||
+                PhoneNumberTextBox.Text != UserToEdit.PhoneNumber ||
+                IsAdminCheckBox.Checked != UserToEdit.IsAdmin)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         private void ChangePasswordCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            if(ChangePasswordCheckBox.Checked)
+            if (ChangePasswordCheckBox.Checked)
             {
                 var size = new Size(430, 278);
                 this.Size = size;
@@ -87,18 +101,26 @@ namespace VolunteerAppClient
                 IsAdminCheckBox.Checked = true;
         }
 
-        /*
-        private void CreateNewUser()
+
+        private void UpdateUserInformation()
         {
             string firstName = FirstNameTextBox.Text, lastName = LastNameTextBox.Text,
-                phoneNumber = PhoneNumberTextBox.Text, emailAddress = EmailAddressTextBox.Text,
-                password = ConfirmPasswordTextBox.Text;
+                phoneNumber = PhoneNumberTextBox.Text, emailAddress = EmailAddressTextBox.Text;
             bool isAdmin = IsAdminCheckBox.Checked;
 
-            string hashedPassword = MD5Hasher.GetHashedValue(password);
-            DatabaseManager.RegisterNewUser(emailAddress, hashedPassword, firstName, lastName, phoneNumber, isAdmin);
+            if (ChangePasswordCheckBox.Checked)
+            {
+                string hashedPassword = MD5Hasher.GetHashedValue(ConfirmPasswordTextBox.Text);
+                Server.ServiceProxy.UpdateUserInfo(UserToEdit.Id, emailAddress, firstName, lastName,
+                    isAdmin, phoneNumber, hashedPassword);
+            }
+            else
+            {
+                Server.ServiceProxy.UpdateUserInfo(UserToEdit.Id, emailAddress, firstName, lastName,
+                    isAdmin, phoneNumber);
+            }
         }
-        */
+
 
         private bool ValidateForm()
         {
@@ -116,18 +138,36 @@ namespace VolunteerAppClient
 
         private void ProcessEdit()
         {
-            if (ValidateForm())
+            if (CheckForChanges())
             {
-                //CreateNewUser();
-                MessageBox.Show("Volunteer account has been created." +
-                    "\nClick OK to go back to the login screen.", "Registration Complete!");
-                this.Close();
+                if (ValidateForm())
+                {
+                    UpdateUserInformation();
+                    MessageBox.Show("Volunteer account has been updated!", "Update Complete");
+                    this.DialogResult = DialogResult.OK;
+                    this.Close();
+                }
+            }
+            else
+            {
+                MessageBox.Show("No changes were made on the form.", "Didn't Update Information");
             }
         }
 
         private void CloseRegistrationForm()
         {
-            this.Close();
+            if (CheckForChanges())
+            {
+                if (MessageBox.Show("Are you sure you want to cancel the changes made?", "Cancel Changes?",
+                    MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    this.DialogResult = DialogResult.Cancel;
+                this.Close();
+            }
+            else
+            {
+                this.DialogResult = DialogResult.Cancel;
+                this.Close();
+            }
         }
 
         private bool EmailIsValid = false;
@@ -151,7 +191,7 @@ namespace VolunteerAppClient
             return EmailIsValid;
         }
 
-        private bool PasswordIsValid = false;
+        private bool PasswordIsValid = true;
         private bool ValidatePassword()
         {
             PasswordIsValid = false;
@@ -164,7 +204,7 @@ namespace VolunteerAppClient
             return PasswordIsValid;
         }
 
-        private bool ConfirmedPasswordIsValid = false;
+        private bool ConfirmedPasswordIsValid = true;
         private bool ValidateConfirmedPassword()
         {
             ConfirmedPasswordIsValid = false;
@@ -335,15 +375,14 @@ namespace VolunteerAppClient
             }
         }
 
-        private void CreateUserButton_Click(object sender, EventArgs e)
-        {
-            ProcessEdit();
-
-        }
-
         private void CancelEditButton_Click(object sender, EventArgs e)
         {
             CloseRegistrationForm();
+        }
+
+        private void SaveChangesButton_Click(object sender, EventArgs e)
+        {
+            ProcessEdit();
         }
     }
 }

@@ -206,7 +206,75 @@ namespace VolunteerAppServer
             return userInfo;
         }
 
-        static public List<EventInfo> GetAllEvents()
+        static public List<int> GetRegisteredEventsForUser(int userId)
+        {
+            var table = new DataTable();
+            var eventIds = new List<int>();
+
+            using (var connection = GetConnection())
+            {
+                string query = "SELECT Registered_Events.EventID FROM Registered_Events JOIN Events " +
+                               "ON Registered_Events.EventID = Events.ID WHERE UserID = @userId and " +
+                               "Events.ContactInfoID <> @userId";
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = query;
+                cmd.Parameters.AddWithValue("@userId", userId);
+
+                var da = new SQLiteDataAdapter(cmd);
+                da.Fill(table);
+            }
+
+            foreach (DataRow row in table.Rows)
+                eventIds.Add(Int32.Parse(row[0].ToString()));
+
+            return eventIds;
+        }
+
+        static public List<int> GetCreatedEventsForUser(int userId)
+        {
+            var table = new DataTable();
+            var eventIds = new List<int>();
+
+            using (var connection = GetConnection())
+            {
+                string query = "SELECT Events.ID FROM Events WHERE Events.ContactInfoID = @userId";
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = query;
+                cmd.Parameters.AddWithValue("@userId", userId);
+
+                var da = new SQLiteDataAdapter(cmd);
+                da.Fill(table);
+            }
+
+            foreach (DataRow row in table.Rows)
+                eventIds.Add(Int32.Parse(row[0].ToString()));
+
+            return eventIds;
+        }
+
+        static public List<int> GetRegisteredIdsForEvent(int evtId)
+        {
+            var table = new DataTable();
+            var userIds = new List<int>();
+
+            using (var connection = GetConnection())
+            {
+                string query = "SELECT UserID FROM Registered_Events WHERE EventID = @eventId";
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = query;
+                cmd.Parameters.AddWithValue("@eventId", evtId);
+
+                var da = new SQLiteDataAdapter(cmd);
+                da.Fill(table);
+            }
+
+            foreach (DataRow row in table.Rows)
+                userIds.Add(Int32.Parse(row[0].ToString()));
+
+            return userIds;
+        }
+
+        static public List<EventInfo> GetAllEventsFromDb()
         {
             var table = new DataTable();
             var listOfEvents = new List<EventInfo>();
@@ -232,14 +300,14 @@ namespace VolunteerAppServer
                     row[4].ToString(),
                     row[3].ToString(),
                     double.Parse(row[6].ToString()),
-                    GetUserInformation(Int32.Parse(row[5].ToString()))
+                    Int32.Parse(row[5].ToString())
                     ));
             }
 
             return listOfEvents;
         }
 
-        static public List<UserInfo> GetAllUsers()
+        static public List<UserInfo> GetAllUsersFromDb()
         {
             var table = new DataTable();
             var listOfUsers = new List<UserInfo>();

@@ -111,6 +111,7 @@
             this.SaveChangesButton.TabIndex = 5;
             this.SaveChangesButton.Text = "Save Changes";
             this.SaveChangesButton.UseVisualStyleBackColor = false;
+            this.SaveChangesButton.Click += new System.EventHandler(this.SaveChangesButton_Click);
             // 
             // FirstNameTextBox
             // 

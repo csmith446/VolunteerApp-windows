@@ -27,8 +27,8 @@ namespace VolunteerAppCommonLib
             this._PhoneNumber = phoneNumber;
             this._IsAdmin = isAdmin;
             this._FullName = new Tuple<string, string>(firstName, lastName);
-            this._CreatedEvents = new List<int>();
-            this._RegisteredEvents = new List<int>();
+            this._CreatedEvents = null;
+            this._RegisteredEvents = null;
         }
 
         #region gets/sets

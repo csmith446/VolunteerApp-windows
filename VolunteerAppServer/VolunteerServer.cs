@@ -76,7 +76,7 @@ namespace VolunteerAppServer
                 Task getLists = new Task(() =>
                 {
                     LogMessage(">> Retrieving data from database...");
-                    ServerSvc.GetCurrentLists();
+                    ServerSvc.GetInitialData();
                     LogMessage(">> Done. Listening for connections...");
                     ServerStatusLabel.Text = "Server : Running";
                 });

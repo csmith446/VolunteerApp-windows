@@ -57,9 +57,23 @@ namespace VolunteerAppClient
 
             SelectedEventIds = new List<int>();
             LoadCurrentEvents(HideRegisteredEventsCheckBox.Checked);
+            LoadUserCreatedEvents();
+            LoadUserRegisteredEvents();
+
+            if (user.IsAdmin) { GetAllEventsToManage(); GetAllUsersToManage(); }
         }
 
-        public static void SetDoubleBuffered(Control control)
+        private UserInfo GetUserFromId(int userId)
+        {
+            return UserList.Find(x => x.Id == userId) as UserInfo;
+        }
+       
+        private EventInfo GetEventFromId(int eventId)
+        {
+            return EventList.Find(x => x.Id == eventId) as EventInfo;
+        }
+
+        private static void SetDoubleBuffered(Control control)
         {
             System.Reflection.PropertyInfo aProp =
                   typeof(System.Windows.Forms.Control).GetProperty(
@@ -134,6 +148,7 @@ namespace VolunteerAppClient
 
             foreach (var evt in currentEvents)
             {
+                var creator = GetUserFromId(evt.CreatorId);
                 //visible subitems
                 var item = new ListViewItem(evt.Name);
                 item.SubItems.Add(evt.Location);
@@ -143,10 +158,10 @@ namespace VolunteerAppClient
                 item.SubItems.Add(evt.StartTime.ToString("hh:mm tt") +
                     " - " + evt.EndTime.ToString("hh:mm tt"));
                 item.SubItems.Add(String.Format("{1}, {0}",
-                    evt.Creator.FullName.Item1,
-                    evt.Creator.FullName.Item2));
-                item.SubItems.Add(evt.Creator.PhoneNumber);
-                item.SubItems.Add(evt.Creator.Username);
+                    creator.FullName.Item1,
+                    creator.FullName.Item2));
+                item.SubItems.Add(creator.PhoneNumber);
+                item.SubItems.Add(creator.Username);
                 item.SubItems.Add(evt.RegisteredUsers.Count.ToString());
                 item.SubItems.Add(evt.Id.ToString());
                 item.SubItems.Add(evt.Duration.ToString());
@@ -430,17 +445,8 @@ namespace VolunteerAppClient
             var selectedId = (!readOnly) ?
                 Int32.Parse(UserCreatedEventsListView.SelectedItems[0].SubItems[4].Text) :
                 Int32.Parse(UserRegisteredEventsListView.SelectedItems[0].SubItems[3].Text);
-            var events = (readOnly) ? CurrentUser.RegisteredEvents : CurrentUser.CreatedEvents;
-            EventInfo selectedEvent = null;
 
-            foreach (var evt in events)
-            {
-                if (evt.Id == selectedId)
-                {
-                    selectedEvent = evt;
-                    break;
-                }
-            }
+            EventInfo selectedEvent = GetEventFromId(selectedId);
 
             var eventForm = new ViewEventForm(selectedEvent, readOnly, Server);
             eventForm.ShowDialog();
@@ -489,9 +495,10 @@ namespace VolunteerAppClient
             AdminEventListView.Items.Clear();
             foreach (var evt in EventList)
             {
+                var creator = GetUserFromId(evt.CreatorId);
                 var item = new ListViewItem(evt.Name);
                 item.SubItems.Add(evt.Date);
-                item.SubItems.Add(evt.Creator.Username);
+                item.SubItems.Add(creator.Username);
                 item.SubItems.Add(evt.Id.ToString());
                 AdminEventListView.Items.Add(item);
             }
@@ -502,10 +509,10 @@ namespace VolunteerAppClient
         private void LoadUserCreatedEvents()
         {
             UserCreatedEventsListView.Items.Clear();
-            //todo: order items with header buttons
             var createdEvents = CurrentUser.CreatedEvents;
-            foreach (var evt in createdEvents)
+            foreach (var id in createdEvents)
             {
+                EventInfo evt = GetEventFromId(id);
                 //visible subitems
                 var item = new ListViewItem(evt.Name);
                 item.SubItems.Add(evt.Date);
@@ -534,20 +541,20 @@ namespace VolunteerAppClient
         private void LoadUserRegisteredEvents()
         {
             UserRegisteredEventsListView.Items.Clear();
-            //todo: order items with header buttons
             var registeredEvents = CurrentUser.RegisteredEvents;
-            foreach (var evt in registeredEvents)
+            foreach (var id in registeredEvents)
             {
+                EventInfo evt = GetEventFromId(id);
+                var creator = GetUserFromId(evt.CreatorId);
                 //visible subitems
                 var item = new ListViewItem(evt.Name);
                 item.SubItems.Add(evt.Date);
 
                 //'invisible' subitems
-                item.SubItems.Add(evt.Creator.Username);
+                item.SubItems.Add(creator.Username);
                 item.SubItems.Add(evt.Id.ToString());
-
-                if (!CurrentUser.CreatedEvents.Contains(evt))
-                    UserRegisteredEventsListView.Items.Add(item);
+                    
+                UserRegisteredEventsListView.Items.Add(item);
             }
 
             if (UserRegisteredEventsListView.Items.Count == 0)
@@ -565,20 +572,20 @@ namespace VolunteerAppClient
 
         private void MainTabControl_SelectedIndexChanged(object sender, EventArgs e)
         {
-            switch (MainTabControl.SelectedIndex)
-            {
-                case 0:
-                    LoadCurrentEvents(HideRegisteredEventsCheckBox.Checked, CurrentOrder);
-                    break;
-                case 1:
-                    LoadUserCreatedEvents();
-                    LoadUserRegisteredEvents();
-                    break;
-                case 2:
-                    GetAllEventsToManage();
-                    GetAllUsersToManage();
-                    break;
-            }
+            //switch (MainTabControl.SelectedIndex)
+            //{
+            //    case 0:
+            //        LoadCurrentEvents(HideRegisteredEventsCheckBox.Checked, CurrentOrder);
+            //        break;
+            //    case 1:
+            //        LoadUserCreatedEvents();
+            //        LoadUserRegisteredEvents();
+            //        break;
+            //    case 2:
+            //        GetAllEventsToManage();
+            //        GetAllUsersToManage();
+            //        break;
+            //}
         }
 
         private void UserCreatedEventsListView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)

@@ -11,8 +11,8 @@ namespace VolunteerAppServer
     internal class ServerService : ScsService, IVolunteerServer
     {
         private readonly ThreadSafeSortedList<long, VolunteerClient> ConnectedClients;
-        private List<EventInfo> AllEventsList;
-        private List<UserInfo> AllUsersList;
+        private List<EventInfo> EventInfoList;
+        private List<UserInfo> UserInfoList;
         private VolunteerServer ServerForm;
 
         public ServerService(VolunteerServer serverForm)
@@ -37,41 +37,33 @@ namespace VolunteerAppServer
         }
         #endregion
 
-        #region IVotingService methods
-        public void GetCurrentLists()
+        public void GetInitialData()
         {
-            AllUsersList = DatabaseManager.GetAllUsers();
-            AllEventsList = DatabaseManager.GetAllEvents();
+            UserInfoList = DatabaseManager.GetAllUsersFromDb();
+            EventInfoList = DatabaseManager.GetAllEventsFromDb();
 
-            //foreach (var usr in AllUsersList)
-            //{
-            //    foreach (var evt in AllEventsList)
-            //    {
-            //        if (evt.Creator.Id == usr.Id)
-            //        {
-            //            usr.CreatedEvents.Add(evt);
-            //            usr.RegisteredEvents.Add(evt);
+            foreach(var evt in EventInfoList)
+            {
+                evt.RegisteredUsers = DatabaseManager.GetRegisteredIdsForEvent(evt.Id);
+            }
 
-            //            evt.RegisteredUsers.Add(usr.Id);
-            //            evt.UpdateCreator(usr);
-            //        }
-            //        else if (DatabaseManager.IsUserRegisteredForEvent(evt.Id, usr.Id))
-            //        {
-            //            usr.RegisteredEvents.Add(evt);
-            //            evt.RegisteredUsers.Add(usr.Id);
-            //        }
-            //    }
+            foreach(var user in UserInfoList)
+            {
+                user.RegisteredEvents = DatabaseManager.GetRegisteredEventsForUser(user.Id);
+                user.CreatedEvents = DatabaseManager.GetCreatedEventsForUser(user.Id);
             }
         }
 
+        #region IVotingService methods
+
         public List<EventInfo> GetUpdatedEvents()
         {
-            return AllEventsList;
+            return EventInfoList;
         }
 
         public List<UserInfo> GetUpdatedUsers()
         {
-            return AllUsersList;
+            return UserInfoList;
         }
 
         public UserInfo GetLoggedOnUser()
@@ -88,7 +80,7 @@ namespace VolunteerAppServer
             {
                 var client = CurrentClient;
                 var clientProxy = client.GetClientProxy<IVolunteerClient>();
-                var user = AllUsersList.Find(x => x.Username == username);
+                var user = UserInfoList.Find(x => x.Username == username);
                 var volunteerClient = new VolunteerClient(client, clientProxy, user);
 
                 ConnectedClients[client.ClientId] = volunteerClient;
@@ -108,22 +100,21 @@ namespace VolunteerAppServer
             ServerForm.CurrentUsersStatusLabel.Text = "Connected Users : " + ConnectedClients.Count.ToString();
         }
 
-        void UpdateUserInfo(int userId, string username, string firstName, string lastName,
+        public void UpdateUserInfo(int userId, string username, string firstName, string lastName,
             bool isAdmin, string phoneNumber, string hashedPassword = null)
         {
             DatabaseManager.UpdateUserInformation(userId, username, firstName, 
                 lastName, isAdmin, phoneNumber, hashedPassword);
-
         }
 
-        void UpdateEventInfo(int eventId, string name, string date, string time,
+        public void UpdateEventInfo(int eventId, string name, string date, string time,
             string duration, string location)
         {
             DatabaseManager.UpdateEventInformation(eventId, name, date,
                 time, duration, location);
         }
 
-        void CreateNewEvent(int userId, string name, string date, string time,
+        public void CreateNewEvent(int userId, string name, string date, string time,
             string duration, string location)
         {
             DatabaseManager.CreateNewEvent(userId, name, date, time,
