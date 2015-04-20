@@ -37,25 +37,33 @@ namespace VolunteerAppServer
         }
         #endregion
 
-        public void GetInitialData()
+        public void GetDataFromDatabase()
         {
             UserInfoList = DatabaseManager.GetAllUsersFromDb();
             EventInfoList = DatabaseManager.GetAllEventsFromDb();
 
-            foreach(var evt in EventInfoList)
+            foreach (var evt in EventInfoList)
             {
                 evt.RegisteredUsers = DatabaseManager.GetRegisteredIdsForEvent(evt.Id);
             }
 
-            foreach(var user in UserInfoList)
+            foreach (var user in UserInfoList)
             {
                 user.RegisteredEvents = DatabaseManager.GetRegisteredEventsForUser(user.Id);
                 user.CreatedEvents = DatabaseManager.GetCreatedEventsForUser(user.Id);
             }
+
+            Task pushData = new Task(() =>
+            {
+                foreach (var client in ConnectedClients.GetAllItems())
+                {
+                    client.ClientProxy.PushDatabaseChanges(EventInfoList, UserInfoList);
+                }
+            });
+            pushData.Start();
         }
 
         #region IVotingService methods
-
         public List<EventInfo> GetUpdatedEvents()
         {
             return EventInfoList;
@@ -74,6 +82,18 @@ namespace VolunteerAppServer
             return userInfo;
         }
 
+        public void DeleteSelectedEvent(int eventId)
+        {
+            DatabaseManager.DeleteEventFromDatabase(eventId);
+            GetDataFromDatabase();
+        }
+
+        public void DeleteSelectedUser(int userId)
+        {
+            DatabaseManager.DeleteUserFromDatabase(userId);
+            GetDataFromDatabase();
+        }
+
         public bool CheckCredentials(string username, string password)
         {
             if (DatabaseManager.IsValidCredentials(username, password))
@@ -88,7 +108,8 @@ namespace VolunteerAppServer
                 ServerForm.CurrentUsersStatusLabel.Text = "Connected Users : " + ConnectedClients.Count.ToString();
                 return true;
             }
-            else return false;
+            else
+                return false;
         }
 
         public void UserLoggedOut()
@@ -103,8 +124,9 @@ namespace VolunteerAppServer
         public void UpdateUserInfo(int userId, string username, string firstName, string lastName,
             bool isAdmin, string phoneNumber, string hashedPassword = null)
         {
-            DatabaseManager.UpdateUserInformation(userId, username, firstName, 
+            DatabaseManager.UpdateUserInformation(userId, username, firstName,
                 lastName, isAdmin, phoneNumber, hashedPassword);
+            GetDataFromDatabase();
         }
 
         public void UpdateEventInfo(int eventId, string name, string date, string time,
@@ -112,6 +134,7 @@ namespace VolunteerAppServer
         {
             DatabaseManager.UpdateEventInformation(eventId, name, date,
                 time, duration, location);
+            GetDataFromDatabase();
         }
 
         public void CreateNewEvent(int userId, string name, string date, string time,
@@ -119,6 +142,7 @@ namespace VolunteerAppServer
         {
             DatabaseManager.CreateNewEvent(userId, name, date, time,
                 duration, location);
+            GetDataFromDatabase();
         }
 
         public void RegisterNewUser(string username, string password, string firstName,
@@ -126,6 +150,7 @@ namespace VolunteerAppServer
         {
             DatabaseManager.RegisterNewUser(username, password, firstName, lastName,
                 phoneNumber, admin);
+            GetDataFromDatabase();
         }
 
         public bool IsEmailInUse(string emailAddress)
@@ -133,24 +158,16 @@ namespace VolunteerAppServer
             return DatabaseManager.IsEmailInUse(emailAddress);
         }
 
-        public void RegisterUserForEvent(int user_id, int event_id)
+        public void UnregisterUserFromEvent(int userId, int eventId)
         {
-            DatabaseManager.RegisterUserForEvent(user_id, event_id);
+            DatabaseManager.UnregisterUserForEvent(userId, eventId);
+            GetDataFromDatabase();
         }
 
-        public bool IsUserRegisteredForEvent(int eventId, int userId)
+        public void RegisterUserForEvent(int userId, int[] eventIds)
         {
-            return DatabaseManager.IsUserRegisteredForEvent(eventId, userId);
-        }
-
-        public bool IsUserAdmin(int id)
-        {
-            return DatabaseManager.IsUserAdmin(id);
-        }
-
-        public int GetContactIDForUser(UserInfo user)
-        {
-            return DatabaseManager.GetContactIDForUser(user);
+            DatabaseManager.RegisterUserForEvent(userId, eventIds);
+            GetDataFromDatabase();
         }
         #endregion
 

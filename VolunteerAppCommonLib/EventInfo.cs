@@ -20,6 +20,7 @@ namespace VolunteerAppCommonLib
         private string _Location { get; set; }
         private int _UserInfoId { get; set; }
         private List<int> _RegisteredUsers { get; set; }
+        private bool _IsCurrent { get; set; }
         #endregion
 
         public EventInfo(int id, string name, string date,
@@ -34,6 +35,9 @@ namespace VolunteerAppCommonLib
             this._Location = location;
             this._UserInfoId = userId;
             this._RegisteredUsers = new List<int>();
+
+            var dt = DateTime.ParseExact(date, "MM/dd/yyyy", CultureInfo.InvariantCulture);
+            this._IsCurrent = (DateTime.Now.CompareTo(dt) < 0);
         }
 
         #region public gets/sets
@@ -76,12 +80,12 @@ namespace VolunteerAppCommonLib
         {
             get { return this._UserInfoId; }
         }
-        #endregion / setters
 
-        //public void UpdateCreator(UserInfo user)
-        //{
-        //    this._UserInfoId = user;
-        //}
+        public bool Current
+        {
+            get { return this._IsCurrent; }
+        }
+        #endregion / setters
 
         public List<int> RegisteredUsers
         {

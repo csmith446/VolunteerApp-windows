@@ -185,6 +185,7 @@
             // 
             this.PasswordTextBox.Location = new System.Drawing.Point(85, 117);
             this.PasswordTextBox.Name = "PasswordTextBox";
+            this.PasswordTextBox.PasswordChar = '•';
             this.PasswordTextBox.Size = new System.Drawing.Size(279, 20);
             this.PasswordTextBox.TabIndex = 13;
             this.PasswordTextBox.Visible = false;
@@ -195,6 +196,7 @@
             // 
             this.ConfirmPasswordTextBox.Location = new System.Drawing.Point(85, 147);
             this.ConfirmPasswordTextBox.Name = "ConfirmPasswordTextBox";
+            this.ConfirmPasswordTextBox.PasswordChar = '•';
             this.ConfirmPasswordTextBox.Size = new System.Drawing.Size(279, 20);
             this.ConfirmPasswordTextBox.TabIndex = 14;
             this.ConfirmPasswordTextBox.Visible = false;
@@ -215,6 +217,7 @@
             // 
             // EditErrorProvider
             // 
+            this.EditErrorProvider.BlinkStyle = System.Windows.Forms.ErrorBlinkStyle.NeverBlink;
             this.EditErrorProvider.ContainerControl = this;
             // 
             // ViewUserForm

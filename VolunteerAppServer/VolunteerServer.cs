@@ -76,7 +76,7 @@ namespace VolunteerAppServer
                 Task getLists = new Task(() =>
                 {
                     LogMessage(">> Retrieving data from database...");
-                    ServerSvc.GetInitialData();
+                    ServerSvc.GetDataFromDatabase();
                     LogMessage(">> Done. Listening for connections...");
                     ServerStatusLabel.Text = "Server : Running";
                 });
@@ -110,6 +110,11 @@ namespace VolunteerAppServer
         private void AboutMenuItem_Click(object sender, EventArgs e)
         {
             ShowAboutWindow();
+        }
+
+        private void VolunteerServer_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Server.Stop();
         }
     }
 }

@@ -14,7 +14,7 @@ using VolunteerAppCommonLib;
 
 namespace VolunteerAppClient
 {
-    public partial class ViewUserForm : Form
+    internal partial class ViewUserForm : Form
     {
         //[todo] move to global constant file
         private const string FIRST_NAME_ERROR = "Your first name cannot be left blank.";
@@ -27,14 +27,14 @@ namespace VolunteerAppClient
 
         //todo: input validation, error provider, and save changes functionality
         //todo: dialog result
-        private IScsServiceClient<IVolunteerServer> Server;
+        private ClientService Client;
 
         private UserInfo UserToEdit;
         public ViewUserForm(UserInfo user, bool adminEdit,
-            IScsServiceClient<IVolunteerServer> server, bool self = true)
+            ClientService client, bool self = true)
         {
             InitializeComponent();
-            Server = server;
+            Client = client;
 
             string title = string.Format("{1}, {0} : ", user.FullName.Item1, user.FullName.Item2);
             this.Text = title + ((adminEdit) ? "Edit Information" : "Update Information");
@@ -47,11 +47,11 @@ namespace VolunteerAppClient
         private void SetPermissions(bool self, bool adminEdit)
         {
             FirstNameTextBox.Enabled = LastNameTextBox.Enabled = self || (adminEdit && !UserToEdit.IsAdmin);
-            EmailAddressTextBox.Enabled = PhoneNumberTextBox.Enabled =
-                SaveChangesButton.Enabled = self || (adminEdit && !UserToEdit.IsAdmin);
+            EmailAddressTextBox.Enabled = PhoneNumberTextBox.Enabled = self || (adminEdit && !UserToEdit.IsAdmin);
             IsAdminCheckBox.Visible = adminEdit;
             IsAdminCheckBox.Enabled = !UserToEdit.IsAdmin;
             ChangePasswordCheckBox.Visible = self || !UserToEdit.IsAdmin;
+            SaveChangesButton.Enabled = adminEdit || self;
         }
 
         private void SetEditValues()
@@ -65,16 +65,26 @@ namespace VolunteerAppClient
 
         private bool CheckForChanges()
         {
-            if (FirstNameTextBox.Text != UserToEdit.FullName.Item1 ||
-                LastNameTextBox.Text != UserToEdit.FullName.Item2 ||
-                EmailAddressTextBox.Text != UserToEdit.Username ||
-                PhoneNumberTextBox.Text != UserToEdit.PhoneNumber ||
-                IsAdminCheckBox.Checked != UserToEdit.IsAdmin)
+            if (FirstNameTextBox.Text.Trim() != UserToEdit.FullName.Item1 ||
+                LastNameTextBox.Text.Trim() != UserToEdit.FullName.Item2 ||
+                EmailAddressTextBox.Text.Trim() != UserToEdit.Username ||
+                PhoneNumberTextBox.Text.Trim() != UserToEdit.PhoneNumber ||
+                IsAdminCheckBox.Checked != UserToEdit.IsAdmin || ChangePasswordCheckBox.Checked)
             {
                 return true;
             }
 
             return false;
+        }
+
+        private void ShowAllErrors()
+        {
+            if (!FirstNameIsValid) SetErrorForControl(FirstNameTextBox, FIRST_NAME_ERROR);
+            if (!LastNameIsValid) SetErrorForControl(LastNameTextBox, LAST_NAME_ERROR);
+            if (!PhoneNumberIsValid) SetErrorForControl(PhoneNumberTextBox, PHONE_ERROR);
+            if (!EmailIsValid) SetErrorForControl(EmailAddressTextBox, INVALID_EMAIL_ERROR);
+            if (!PasswordIsValid) SetErrorForControl(PasswordTextBox, PASSWORD_ERROR);
+            if (!ConfirmedPasswordIsValid) SetErrorForControl(ConfirmPasswordTextBox, CONFIRM_ERROR);
         }
 
         private void ChangePasswordCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -92,6 +102,8 @@ namespace VolunteerAppClient
                 this.Size = size;
                 PasswordLabel.Visible = ConfirmPasswordLabel.Visible =
                     PasswordTextBox.Visible = ConfirmPasswordTextBox.Visible = false;
+                SetErrorForControl(PasswordTextBox);
+                SetErrorForControl(ConfirmPasswordTextBox);
             }
         }
 
@@ -104,35 +116,39 @@ namespace VolunteerAppClient
 
         private void UpdateUserInformation()
         {
-            string firstName = FirstNameTextBox.Text, lastName = LastNameTextBox.Text,
-                phoneNumber = PhoneNumberTextBox.Text, emailAddress = EmailAddressTextBox.Text;
+            string firstName = FirstNameTextBox.Text.Trim(), lastName = LastNameTextBox.Text.Trim(),
+                phoneNumber = PhoneNumberTextBox.Text, emailAddress = EmailAddressTextBox.Text.Trim();
+            string password = null;
             bool isAdmin = IsAdminCheckBox.Checked;
 
             if (ChangePasswordCheckBox.Checked)
             {
-                string hashedPassword = MD5Hasher.GetHashedValue(ConfirmPasswordTextBox.Text);
-                Server.ServiceProxy.UpdateUserInfo(UserToEdit.Id, emailAddress, firstName, lastName,
-                    isAdmin, phoneNumber, hashedPassword);
+                password = MD5Hasher.GetHashedValue(ConfirmPasswordTextBox.Text);
             }
-            else
-            {
-                Server.ServiceProxy.UpdateUserInfo(UserToEdit.Id, emailAddress, firstName, lastName,
-                    isAdmin, phoneNumber);
-            }
+
+            Client.UpdateUserInfo(UserToEdit.Id, emailAddress, firstName, lastName,
+                isAdmin, phoneNumber, password);
         }
 
 
         private bool ValidateForm()
         {
+            bool pwChange = ChangePasswordCheckBox.Checked;
             if (FirstNameIsValid && LastNameIsValid && PhoneNumberIsValid
-                && EmailIsValid && PasswordIsValid && ConfirmedPasswordIsValid)
+                && EmailIsValid)
             {
+                if (pwChange && (!ValidatePassword() || !ValidateConfirmedPassword()))
+                {
+                    ShowAllErrors();
+                    return false;
+                }
+
                 return true;
             }
 
-            //ShowAllErrors();
-            MessageBox.Show("Registration was not submitted. Errors exist on the page.",
-                "Oops! There were some errors!");
+            ShowAllErrors();
+            MessageBox.Show("Updating information was not submitted.\nErrors exist on the page.",
+                "Errors");
             return false;
         }
 
@@ -143,14 +159,13 @@ namespace VolunteerAppClient
                 if (ValidateForm())
                 {
                     UpdateUserInformation();
-                    MessageBox.Show("Volunteer account has been updated!", "Update Complete");
-                    this.DialogResult = DialogResult.OK;
+                    MessageBox.Show("User information has been updated!", "Update Successful");
                     this.Close();
                 }
             }
             else
             {
-                MessageBox.Show("No changes were made on the form.", "Didn't Update Information");
+                MessageBox.Show("No changes were made on the form.", "Error");
             }
         }
 
@@ -160,38 +175,38 @@ namespace VolunteerAppClient
             {
                 if (MessageBox.Show("Are you sure you want to cancel the changes made?", "Cancel Changes?",
                     MessageBoxButtons.YesNo) == DialogResult.Yes)
-                    this.DialogResult = DialogResult.Cancel;
-                this.Close();
+                    this.Close();
             }
             else
             {
-                this.DialogResult = DialogResult.Cancel;
                 this.Close();
             }
         }
 
-        private bool EmailIsValid = false;
+        private bool EmailIsValid = true;
         private bool ValidateEmail(ref bool isInUse)
         {
             string email = EmailAddressTextBox.Text.ToLower();
-            if (email.Contains("..") || email.Contains(".@"))
-                return false;
-
-            try
+            if (email != UserToEdit.Username)
             {
-                var address = new MailAddress(email);
-                isInUse = (Server.ServiceProxy.IsEmailInUse(email)) ? true : false;
-                EmailIsValid = !isInUse;
-            }
-            catch
-            {
-                EmailIsValid = false;
-            }
+                if (email.Contains("..") || email.Contains(".@"))
+                    return false;
 
+                try
+                {
+                    var address = new MailAddress(email);
+                    isInUse = (Client.IsEmailInUse(email)) ? true : false;
+                    EmailIsValid = !isInUse;
+                }
+                catch
+                {
+                    EmailIsValid = false;
+                }
+            }
             return EmailIsValid;
         }
 
-        private bool PasswordIsValid = true;
+        private bool PasswordIsValid = false;
         private bool ValidatePassword()
         {
             PasswordIsValid = false;
@@ -204,7 +219,7 @@ namespace VolunteerAppClient
             return PasswordIsValid;
         }
 
-        private bool ConfirmedPasswordIsValid = true;
+        private bool ConfirmedPasswordIsValid = false;
         private bool ValidateConfirmedPassword()
         {
             ConfirmedPasswordIsValid = false;
@@ -217,7 +232,7 @@ namespace VolunteerAppClient
             return ConfirmedPasswordIsValid;
         }
 
-        private bool FirstNameIsValid = false;
+        private bool FirstNameIsValid = true;
         private bool ValidateFirstName()
         {
             FirstNameIsValid = false;
@@ -230,7 +245,7 @@ namespace VolunteerAppClient
             return FirstNameIsValid;
         }
 
-        private bool LastNameIsValid = false;
+        private bool LastNameIsValid = true;
         private bool ValidateLastName()
         {
             LastNameIsValid = false;
@@ -243,7 +258,7 @@ namespace VolunteerAppClient
             return LastNameIsValid;
         }
 
-        private bool PhoneNumberIsValid = false;
+        private bool PhoneNumberIsValid = true;
         private bool ValidatePhoneNumber()
         {
             PhoneNumberIsValid = false;

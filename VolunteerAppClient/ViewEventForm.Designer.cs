@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.EndTimePicker = new System.Windows.Forms.DateTimePicker();
             this.StartTimePicker = new System.Windows.Forms.DateTimePicker();
             this.EndTimeLabel = new System.Windows.Forms.Label();
@@ -40,6 +41,8 @@
             this.StartTimeLabel = new System.Windows.Forms.Label();
             this.LocationLabel = new System.Windows.Forms.Label();
             this.NameLabel = new System.Windows.Forms.Label();
+            this.EditEventErrorProvider = new System.Windows.Forms.ErrorProvider(this.components);
+            ((System.ComponentModel.ISupportInitialize)(this.EditEventErrorProvider)).BeginInit();
             this.SuspendLayout();
             // 
             // EndTimePicker
@@ -52,6 +55,7 @@
             this.EndTimePicker.Size = new System.Drawing.Size(75, 20);
             this.EndTimePicker.TabIndex = 63;
             this.EndTimePicker.Value = new System.DateTime(2015, 3, 27, 13, 0, 0, 0);
+            this.EndTimePicker.ValueChanged += new System.EventHandler(this.EndTimePicker_ValueChanged);
             // 
             // StartTimePicker
             // 
@@ -93,16 +97,20 @@
             // LocationTextBox
             // 
             this.LocationTextBox.Location = new System.Drawing.Point(101, 47);
+            this.LocationTextBox.MaxLength = 64;
             this.LocationTextBox.Name = "LocationTextBox";
             this.LocationTextBox.Size = new System.Drawing.Size(140, 20);
             this.LocationTextBox.TabIndex = 58;
+            this.LocationTextBox.Validating += new System.ComponentModel.CancelEventHandler(this.LocationTextBox_Validating);
             // 
             // NameTextBox
             // 
             this.NameTextBox.Location = new System.Drawing.Point(101, 17);
+            this.NameTextBox.MaxLength = 128;
             this.NameTextBox.Name = "NameTextBox";
             this.NameTextBox.Size = new System.Drawing.Size(279, 20);
             this.NameTextBox.TabIndex = 57;
+            this.NameTextBox.Validating += new System.ComponentModel.CancelEventHandler(this.NameTextBox_Validating);
             // 
             // SaveChangesButton
             // 
@@ -116,6 +124,7 @@
             this.SaveChangesButton.TabIndex = 56;
             this.SaveChangesButton.Text = "Save Changes";
             this.SaveChangesButton.UseVisualStyleBackColor = false;
+            this.SaveChangesButton.Click += new System.EventHandler(this.SaveChangesButton_Click);
             // 
             // CancelEditButton
             // 
@@ -158,6 +167,11 @@
             this.NameLabel.TabIndex = 52;
             this.NameLabel.Text = "Event Name:";
             // 
+            // EditEventErrorProvider
+            // 
+            this.EditEventErrorProvider.BlinkStyle = System.Windows.Forms.ErrorBlinkStyle.NeverBlink;
+            this.EditEventErrorProvider.ContainerControl = this;
+            // 
             // ViewEventForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -179,6 +193,7 @@
             this.Name = "ViewEventForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "EditEventForm";
+            ((System.ComponentModel.ISupportInitialize)(this.EditEventErrorProvider)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -198,5 +213,6 @@
         private System.Windows.Forms.Label StartTimeLabel;
         private System.Windows.Forms.Label LocationLabel;
         private System.Windows.Forms.Label NameLabel;
+        private System.Windows.Forms.ErrorProvider EditEventErrorProvider;
     }
 }

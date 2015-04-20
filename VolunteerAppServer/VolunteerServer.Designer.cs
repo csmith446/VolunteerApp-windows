@@ -36,10 +36,10 @@
             this.AboutMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ServerStatusStrip = new System.Windows.Forms.StatusStrip();
             this.ServerStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.CurrentUsersStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.ControlButton = new System.Windows.Forms.Button();
             this.ServerLogListBox = new System.Windows.Forms.ListBox();
             this.ClearLogButton = new System.Windows.Forms.Button();
-            this.CurrentUsersStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.ServerMenuStrip.SuspendLayout();
             this.ServerStatusStrip.SuspendLayout();
             this.SuspendLayout();
@@ -107,6 +107,15 @@
             this.ServerStatusLabel.Text = "Server : Stopped";
             this.ServerStatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // CurrentUsersStatusLabel
+            // 
+            this.CurrentUsersStatusLabel.AutoSize = false;
+            this.CurrentUsersStatusLabel.Margin = new System.Windows.Forms.Padding(180, 3, 0, 2);
+            this.CurrentUsersStatusLabel.Name = "CurrentUsersStatusLabel";
+            this.CurrentUsersStatusLabel.Size = new System.Drawing.Size(135, 17);
+            this.CurrentUsersStatusLabel.Text = "Connected Users: 0";
+            this.CurrentUsersStatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
             // ControlButton
             // 
             this.ControlButton.BackColor = System.Drawing.Color.LightGreen;
@@ -140,15 +149,6 @@
             this.ClearLogButton.UseVisualStyleBackColor = false;
             this.ClearLogButton.Click += new System.EventHandler(this.ClearLogButton_Click);
             // 
-            // CurrentUsersStatusLabel
-            // 
-            this.CurrentUsersStatusLabel.AutoSize = false;
-            this.CurrentUsersStatusLabel.Margin = new System.Windows.Forms.Padding(180, 3, 0, 2);
-            this.CurrentUsersStatusLabel.Name = "CurrentUsersStatusLabel";
-            this.CurrentUsersStatusLabel.Size = new System.Drawing.Size(135, 17);
-            this.CurrentUsersStatusLabel.Text = "Connected Users: 0";
-            this.CurrentUsersStatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
             // VolunteerServer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -165,6 +165,7 @@
             this.MaximizeBox = false;
             this.Name = "VolunteerServer";
             this.Text = "Volunter Application Server";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.VolunteerServer_FormClosing);
             this.ServerMenuStrip.ResumeLayout(false);
             this.ServerMenuStrip.PerformLayout();
             this.ServerStatusStrip.ResumeLayout(false);

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.LocationTextBox = new System.Windows.Forms.TextBox();
             this.NameTextBox = new System.Windows.Forms.TextBox();
             this.CreateEventButton = new System.Windows.Forms.Button();
@@ -40,21 +41,27 @@
             this.EndTimeLabel = new System.Windows.Forms.Label();
             this.StartTimePicker = new System.Windows.Forms.DateTimePicker();
             this.EndTimePicker = new System.Windows.Forms.DateTimePicker();
+            this.CreateEventErrorProvider = new System.Windows.Forms.ErrorProvider(this.components);
+            ((System.ComponentModel.ISupportInitialize)(this.CreateEventErrorProvider)).BeginInit();
             this.SuspendLayout();
             // 
             // LocationTextBox
             // 
             this.LocationTextBox.Location = new System.Drawing.Point(101, 47);
+            this.LocationTextBox.MaxLength = 64;
             this.LocationTextBox.Name = "LocationTextBox";
-            this.LocationTextBox.Size = new System.Drawing.Size(140, 20);
+            this.LocationTextBox.Size = new System.Drawing.Size(120, 20);
             this.LocationTextBox.TabIndex = 40;
+            this.LocationTextBox.Validating += new System.ComponentModel.CancelEventHandler(this.LocationTextBox_Validating);
             // 
             // NameTextBox
             // 
             this.NameTextBox.Location = new System.Drawing.Point(101, 17);
+            this.NameTextBox.MaxLength = 128;
             this.NameTextBox.Name = "NameTextBox";
             this.NameTextBox.Size = new System.Drawing.Size(279, 20);
             this.NameTextBox.TabIndex = 38;
+            this.NameTextBox.Validating += new System.ComponentModel.CancelEventHandler(this.NameTextBox_Validating);
             // 
             // CreateEventButton
             // 
@@ -68,6 +75,7 @@
             this.CreateEventButton.TabIndex = 37;
             this.CreateEventButton.Text = "Create Event";
             this.CreateEventButton.UseVisualStyleBackColor = false;
+            this.CreateEventButton.Click += new System.EventHandler(this.CreateEventButton_Click);
             // 
             // CancelNewEventButton
             // 
@@ -157,6 +165,12 @@
             this.EndTimePicker.Size = new System.Drawing.Size(75, 20);
             this.EndTimePicker.TabIndex = 51;
             this.EndTimePicker.Value = new System.DateTime(2015, 3, 27, 13, 0, 0, 0);
+            this.EndTimePicker.ValueChanged += new System.EventHandler(this.EndTimePicker_ValueChanged);
+            // 
+            // CreateEventErrorProvider
+            // 
+            this.CreateEventErrorProvider.BlinkStyle = System.Windows.Forms.ErrorBlinkStyle.NeverBlink;
+            this.CreateEventErrorProvider.ContainerControl = this;
             // 
             // CreateEventForm
             // 
@@ -179,6 +193,7 @@
             this.Name = "CreateEventForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Create a New Event";
+            ((System.ComponentModel.ISupportInitialize)(this.CreateEventErrorProvider)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -198,5 +213,6 @@
         private System.Windows.Forms.Label EndTimeLabel;
         private System.Windows.Forms.DateTimePicker StartTimePicker;
         private System.Windows.Forms.DateTimePicker EndTimePicker;
+        private System.Windows.Forms.ErrorProvider CreateEventErrorProvider;
     }
 }

@@ -14,9 +14,9 @@ using VolunteerAppCommonLib;
 
 namespace VolunteerAppClient
 {
-    public partial class RegistrationForm : Form
+    internal partial class RegistrationForm : Form
     {
-        private IScsServiceClient<IVolunteerServer> Server;
+        private ClientService Client;
 
         //[todo] create global constant file for this mess 
         private const string FIRST_NAME_ERROR = "Your first name cannot be left blank.";
@@ -27,20 +27,20 @@ namespace VolunteerAppClient
         private const string PASSWORD_ERROR = "Your password must be at least 6 characters long.";
         private const string CONFIRM_ERROR = "Your confirmed password and password do not match.";
 
-        public RegistrationForm(IScsServiceClient<IVolunteerServer> server)
+        public RegistrationForm(ClientService client)
         {
             InitializeComponent();
-            Server = server;
+            Client = client;
         }
 
         private void CreateNewUser()
         {
-            string firstName = FirstNameTextBox.Text, lastName = LastNameTextBox.Text,
-                phoneNumber = PhoneNumberTextBox.Text, emailAddress = EmailAddressTextBox.Text,
-                password = ConfirmPasswordTextBox.Text;
+            string firstName = FirstNameTextBox.Text.Trim(), lastName = LastNameTextBox.Text.Trim(),
+                phoneNumber = PhoneNumberTextBox.Text, emailAddress = EmailAddressTextBox.Text.Trim(),
+                password = ConfirmPasswordTextBox.Text.Trim();
 
             string hashedPassword = MD5Hasher.GetHashedValue(password);
-            Server.ServiceProxy.RegisterNewUser(emailAddress, hashedPassword, firstName, lastName, phoneNumber, false);
+            Client.RegisterNewUser(emailAddress, hashedPassword, firstName, lastName, phoneNumber, false);
         }
 
         //TODO: show correct error message for email address 
@@ -64,7 +64,7 @@ namespace VolunteerAppClient
 
             ShowAllErrors();
             MessageBox.Show("Registration was not submitted. Errors exist on the page.",
-                "Oops! There were some errors!");
+                "Errors");
             return false;
         }
 
@@ -78,7 +78,7 @@ namespace VolunteerAppClient
             try
             {
                 var address = new MailAddress(email);
-                isInUse = (Server.ServiceProxy.IsEmailInUse(email)) ? true : false;
+                isInUse = (Client.IsEmailInUse(email)) ? true : false;
                 EmailIsValid = !isInUse;
             }
             catch
@@ -174,7 +174,7 @@ namespace VolunteerAppClient
             {
                 CreateNewUser();
                 MessageBox.Show("Volunteer account has been created." +
-                    "\nClick OK to go back to the login screen.", "Registration Complete!");
+                    "\nClick OK to go back to the login screen.", "Registration Complete");
                 this.Close();
             }
         }
@@ -198,7 +198,7 @@ namespace VolunteerAppClient
 
         private void LimitInputForName_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar))
+            if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && e.KeyChar != ' ')
                 e.Handled = true;
         }
 
@@ -317,7 +317,7 @@ namespace VolunteerAppClient
             if (Canceled)
             {
                 if (MessageBox.Show(this, "Are you sure you want to cancel your registration?",
-                    "Cancel Registration", MessageBoxButtons.YesNo) == DialogResult.No)
+                    "Cancel Registration?", MessageBoxButtons.YesNo) == DialogResult.No)
                     e.Cancel = true;
             }
         }

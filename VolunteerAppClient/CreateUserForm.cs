@@ -14,9 +14,9 @@ using VolunteerAppCommonLib;
 
 namespace VolunteerAppClient
 {
-    public partial class CreateUserForm : Form
+    internal partial class CreateUserForm : Form
     {
-        private IScsServiceClient<IVolunteerServer> Server;
+        private ClientService Client;
 
         //[todo] input validation, error providers, database query
         //[todo] dialog result
@@ -28,21 +28,21 @@ namespace VolunteerAppClient
         private const string PASSWORD_ERROR = "Your password must be at least 6 characters long.";
         private const string CONFIRM_ERROR = "Your confirmed password and password do not match.";
 
-        public CreateUserForm(IScsServiceClient<IVolunteerServer> server)
+        public CreateUserForm(ClientService client)
         {
             InitializeComponent();
-            Server = server;
+            Client = client;
         }
 
         private void CreateNewUser()
         {
-            string firstName = FirstNameTextBox.Text, lastName = LastNameTextBox.Text,
-                phoneNumber = PhoneNumberTextBox.Text, emailAddress = EmailAddressTextBox.Text,
-                password = ConfirmPasswordTextBox.Text;
+            string firstName = FirstNameTextBox.Text.Trim(), lastName = LastNameTextBox.Text.Trim(),
+                phoneNumber = PhoneNumberTextBox.Text, emailAddress = EmailAddressTextBox.Text.Trim(),
+                password = ConfirmPasswordTextBox.Text.Trim();
             bool isAdmin = UserIsAdminCheckBox.Checked;
 
             string hashedPassword = MD5Hasher.GetHashedValue(password);
-            Server.ServiceProxy.RegisterNewUser(emailAddress, hashedPassword, firstName, lastName, phoneNumber, isAdmin);
+            Client.RegisterNewUser(emailAddress, hashedPassword, firstName, lastName, phoneNumber, isAdmin);
         }
 
         private bool ValidateForm()
@@ -53,10 +53,20 @@ namespace VolunteerAppClient
                 return true;
             }
 
-            //ShowAllErrors();
-            MessageBox.Show("Registration was not submitted. Errors exist on the page.",
-                "Oops! There were some errors!");
+            ShowAllErrors();
+            MessageBox.Show("The user account was not created.\nErrors exist on the page.",
+                "Errors");
             return false;
+        }
+
+        private void ShowAllErrors()
+        {
+            if (!FirstNameIsValid) SetErrorForControl(FirstNameTextBox, FIRST_NAME_ERROR);
+            if (!LastNameIsValid) SetErrorForControl(LastNameTextBox, LAST_NAME_ERROR);
+            if (!PhoneNumberIsValid) SetErrorForControl(PhoneNumberTextBox, PHONE_ERROR);
+            if (!EmailIsValid) SetErrorForControl(EmailAddressTextBox, INVALID_EMAIL_ERROR);
+            if (!PasswordIsValid) SetErrorForControl(PasswordTextBox, PASSWORD_ERROR);
+            if (!ConfirmedPasswordIsValid) SetErrorForControl(ConfirmPasswordTextBox, CONFIRM_ERROR);
         }
 
         private void ProcessNewUserCreation()
@@ -64,8 +74,7 @@ namespace VolunteerAppClient
             if (ValidateForm())
             {
                 CreateNewUser();
-                MessageBox.Show("Volunteer account has been created." +
-                    "\nClick OK to go back to the login screen.", "Registration Complete!");
+                MessageBox.Show("User account has been created.", "User Created Successfully");
                 this.Close();
             }
         }
@@ -85,7 +94,7 @@ namespace VolunteerAppClient
             try
             {
                 var address = new MailAddress(email);
-                isInUse = (Server.ServiceProxy.IsEmailInUse(email)) ? true : false;
+                isInUse = (Client.IsEmailInUse(email)) ? true : false;
                 EmailIsValid = !isInUse;
             }
             catch
@@ -259,7 +268,7 @@ namespace VolunteerAppClient
 
         private void LimitInputForName_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar))
+            if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && e.KeyChar != ' ')
                 e.Handled = true;
         }
 

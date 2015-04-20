@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Globalization;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -13,10 +15,10 @@ using VolunteerAppCommonLib;
 
 namespace VolunteerAppClient
 {
-    public partial class MainVolunteerForm : Form
+    internal partial class MainVolunteerForm : Form
     {
-        private static IScsServiceClient<IVolunteerServer> Server;
-       
+        private ClientService Client;
+
         //[todo] get rid of redundant lists
         private List<int> SelectedEventIds;     //list for 'saving' selected events when sorting
         private List<UserInfo> UserList;            //main User list - pulled form database
@@ -25,6 +27,8 @@ namespace VolunteerAppClient
 
         private LoginForm LoginForm;
         private UserInfo CurrentUser;
+
+        private BackgroundWorker RefreshListsWorker;
 
         private enum OrderBy
         {
@@ -36,8 +40,8 @@ namespace VolunteerAppClient
             DateDesc
         };
 
-        public MainVolunteerForm(UserInfo user, LoginForm loginScreen, 
-            IScsServiceClient<IVolunteerServer> server)
+        public MainVolunteerForm(UserInfo user, LoginForm loginScreen,
+            ClientService client)
         {
             InitializeComponent();
 
@@ -49,25 +53,58 @@ namespace VolunteerAppClient
 
             CurrentUser = user;
             LoginForm = loginScreen;
-            Server = server;
+            Client = client;
 
-            UpdateLists();
+            Client.GetDatabaseInfo(out EventList, out UserList, this);
+            SetRegisteredCountLable();
             SetLoggedInUserName();
             SetAdminStatus();
 
             SelectedEventIds = new List<int>();
-            LoadCurrentEvents(HideRegisteredEventsCheckBox.Checked);
+            RefreshListViews();
+
+            RefreshListsWorker = new BackgroundWorker();
+            RefreshListsWorker.WorkerReportsProgress = true;
+            RefreshListsWorker.DoWork += RefreshListsWorker_DoWork;
+            RefreshListsWorker.RunWorkerCompleted += RefreshListsWorker_RunWorkerCompleted;
+
+            if (CurrentUser.IsAdmin)
+            {
+                AdminTotalUsersLabel.Text = string.Format("Total Users: {0}", UserList.Count);
+                AdminTotalCountLabel.Text = string.Format("Total Events: {0}", EventList.Count);
+                AdminCurrentEventCountLabel.Text = string.Format("Current Events: {0}",
+                    EventList.FindAll(x => x.Current).Count);
+            }
+        }
+
+        internal void RefreshListsWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            var status = LogInStatusLabel.Text.Replace("Connected", "Connected");
+        }
+
+        internal void RefreshListsWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            var status = LogInStatusLabel.Text.Replace("Connected", "Loading...");
+            var updatedUser = UserList.Find(x => x.Id == CurrentUser.Id);
+            CurrentUser = updatedUser;
+            RefreshListViews();
+            if (CurrentUser.IsAdmin) UpdateAdminCounts();
+        }
+
+        internal void RefreshListViews()
+        {
+            LoadCurrentEvents();
             LoadUserCreatedEvents();
             LoadUserRegisteredEvents();
-
-            if (user.IsAdmin) { GetAllEventsToManage(); GetAllUsersToManage(); }
+            if (CurrentUser.IsAdmin) { GetAllEventsToManage(); GetAllUsersToManage(); }
+            SetRegisteredCountLable();
         }
 
         private UserInfo GetUserFromId(int userId)
         {
             return UserList.Find(x => x.Id == userId) as UserInfo;
         }
-       
+
         private EventInfo GetEventFromId(int eventId)
         {
             return EventList.Find(x => x.Id == eventId) as EventInfo;
@@ -84,11 +121,11 @@ namespace VolunteerAppClient
             aProp.SetValue(control, true, null);
         }
 
-        private void UpdateLists()
+        internal void UpdateLists(List<EventInfo> events, List<UserInfo> users)
         {
-            UserList = Server.ServiceProxy.GetUpdatedUsers();
-            EventList = Server.ServiceProxy.GetUpdatedEvents();
-            SetRegisteredCountLable();
+            EventList = events;
+            UserList = users;
+            RefreshListsWorker.RunWorkerAsync();
         }
 
         private void SetAdminStatus()
@@ -102,8 +139,9 @@ namespace VolunteerAppClient
         private void SetRegisteredCountLable()
         {
             //int events = Server.ServiceProxy.GetRegisteredCountForUser(CurrentUser.Id);
-            int events = CurrentUser.RegisteredEvents.Count;
-            RegisteredEventCountLabel.Text = string.Format("Registered for {0} upcoming events", events);
+            var events = EventList.FindAll(x => CurrentUser.RegisteredEvents.Contains(x.Id));
+            var count = events.FindAll(x => x.Current == true).Count;
+            RegisteredEventCountLabel.Text = string.Format("Registered for {0} upcoming events", count);
         }
 
         private void SetLoggedInUserName()
@@ -115,98 +153,111 @@ namespace VolunteerAppClient
 
             LogInStatusLabel.Text = loginStatus;
         }
-
-        private OrderBy CurrentOrder;
-        private void LoadCurrentEvents(bool hideRegistered, OrderBy order = OrderBy.Date)
+        //private OrderBy CurrentOrder;
+        private delegate void LoadCurrentCallBack();
+        private void LoadCurrentEvents()
         {
-            VolunteerEventsListView.Items.Clear();
-            VolunteerEventsListView.CheckBoxes = true;
-            RegisteredEventItems = new List<ListViewItem>();
-
-            var currentEvents = EventList;
-            switch (order)
+            if (VolunteerEventsListView.InvokeRequired)
             {
-                case OrderBy.Name:
-                    currentEvents = currentEvents.OrderBy(evt => evt.Name).ToList();
-                    break;
-                case OrderBy.NameDesc:
-                    currentEvents = currentEvents.OrderByDescending(evt => evt.Name).ToList();
-                    break;
-                case OrderBy.Location:
-                    currentEvents = currentEvents.OrderBy(evt => evt.Location).ToList();
-                    break;
-                case OrderBy.LocationDesc:
-                    currentEvents = currentEvents.OrderByDescending(evt => evt.Location).ToList();
-                    break;
-                case OrderBy.DateDesc:
-                    currentEvents = currentEvents.OrderByDescending(evt => evt.Date).ToList();
-                    break;
-            }
-
-            CurrentOrder = order;
-            FixHeaderColors();
-
-            foreach (var evt in currentEvents)
-            {
-                var creator = GetUserFromId(evt.CreatorId);
-                //visible subitems
-                var item = new ListViewItem(evt.Name);
-                item.SubItems.Add(evt.Location);
-                item.SubItems.Add(evt.Date);
-
-                //'invisible' subitems
-                item.SubItems.Add(evt.StartTime.ToString("hh:mm tt") +
-                    " - " + evt.EndTime.ToString("hh:mm tt"));
-                item.SubItems.Add(String.Format("{1}, {0}",
-                    creator.FullName.Item1,
-                    creator.FullName.Item2));
-                item.SubItems.Add(creator.PhoneNumber);
-                item.SubItems.Add(creator.Username);
-                item.SubItems.Add(evt.RegisteredUsers.Count.ToString());
-                item.SubItems.Add(evt.Id.ToString());
-                item.SubItems.Add(evt.Duration.ToString());
-
-                if (SelectedEventIds.Contains(evt.Id)) item.Checked = true;
-
-                if (evt.RegisteredUsers.Contains(CurrentUser.Id))
-                    RegisteredEventItems.Add(item);
-                else
-                    VolunteerEventsListView.Items.Add(item);
-            }
-
-            if (!hideRegistered)
-            {
-                foreach (var evt in RegisteredEventItems)
-                {
-                    evt.ForeColor = Color.Red;
-                    VolunteerEventsListView.Items.Add(evt);
-                }
-            }
-
-            if (VolunteerEventsListView.Items.Count == 0)
-            {
-                VolunteerEventsListView.Items.Add(new ListViewItem("There are no new events"));
-                VolunteerEventsListView.CheckBoxes = false;
-                VolunteerEventsListView.Enabled = false;
-                DetailedInformationGroupBox.Visible = false;
+                var callBack = new LoadCurrentCallBack(LoadCurrentEvents);
+                Invoke(callBack);
             }
             else
             {
-                VolunteerEventsListView.Enabled = true;
-                DetailedInformationGroupBox.Visible = true;
-            }
+                VolunteerEventsListView.Items.Clear();
 
-            HideRegisteredEventsCheckBox.Visible = RegisteredEventItems.Count > 0;
-            RedEventEntryLabel.Visible = RegisteredEventItems.Count > 0;
-            VolunteerEventsListView.Items[0].Selected = true;
-            AdjustEventListViewSize();
+                VolunteerEventsListView.CheckBoxes = true;
+                RegisteredEventItems = new List<ListViewItem>();
+
+                var currentEvents = EventList;
+                //switch (order)
+                //{
+                //    case OrderBy.Name:
+                //        currentEvents = currentEvents.OrderBy(evt => evt.Name).ToList();
+                //        break;
+                //    case OrderBy.NameDesc:
+                //        currentEvents = currentEvents.OrderByDescending(evt => evt.Name).ToList();
+                //        break;
+                //    case OrderBy.Location:
+                //        currentEvents = currentEvents.OrderBy(evt => evt.Location).ToList();
+                //        break;
+                //    case OrderBy.LocationDesc:
+                //        currentEvents = currentEvents.OrderByDescending(evt => evt.Location).ToList();
+                //        break;
+                //    case OrderBy.DateDesc:
+                //        currentEvents = currentEvents.OrderByDescending(evt => evt.Date).ToList();
+                //        break;
+                //}
+
+                //CurrentOrder = order;
+                //FixHeaderColors();
+
+                foreach (var evt in currentEvents)
+                {
+                    if (evt.Current)
+                    {
+                        var creator = GetUserFromId(evt.CreatorId);
+                        //visible subitems
+                        var item = new ListViewItem(evt.Name);
+                        item.SubItems.Add(evt.Location);
+                        item.SubItems.Add(evt.Date);
+
+                        //'invisible' subitems
+                        item.SubItems.Add(evt.StartTime.ToString("hh:mm tt") +
+                            " - " + evt.EndTime.ToString("hh:mm tt"));
+                        item.SubItems.Add(String.Format("{1}, {0}",
+                            creator.FullName.Item1,
+                            creator.FullName.Item2));
+                        item.SubItems.Add(creator.PhoneNumber);
+                        item.SubItems.Add(creator.Username);
+                        item.SubItems.Add(evt.RegisteredUsers.Count.ToString());
+                        item.SubItems.Add(evt.Id.ToString());
+                        item.SubItems.Add(evt.Duration.ToString());
+
+                        if (CurrentUser.RegisteredEvents.Contains(evt.Id) || CurrentUser.CreatedEvents.Contains(evt.Id))
+                            RegisteredEventItems.Add(item);
+                        else
+                        {
+                            if (SelectedEventIds.Contains(evt.Id)) item.Checked = true;
+                            VolunteerEventsListView.Items.Add(item);
+                        }
+                    }
+                }
+
+                if (!HideRegisteredEventsCheckBox.Checked)
+                {
+                    foreach (var evt in RegisteredEventItems)
+                    {
+                        evt.ForeColor = Color.Red;
+                        VolunteerEventsListView.Items.Add(evt);
+                    }
+                }
+
+                if (VolunteerEventsListView.Items.Count == 0)
+                {
+                    VolunteerEventsListView.Items.Add(new ListViewItem("There are no new events"));
+                    VolunteerEventsListView.CheckBoxes = false;
+                    VolunteerEventsListView.Enabled = false;
+                    DetailedInformationGroupBox.Visible = false;
+                }
+                else
+                {
+                    VolunteerEventsListView.Enabled = true;
+                    DetailedInformationGroupBox.Visible = true;
+                }
+
+                HideRegisteredEventsCheckBox.Visible = RegisteredEventItems.Count > 0;
+                RedEventEntryLabel.Visible = RegisteredEventItems.Count > 0;
+                VolunteerEventsListView.Items[0].Selected = true;
+                AdjustEventListViewSize();
+            }
         }
 
         private void FixHeaderColors()
         {
-            UpcomingEventNameHeaderButton.BackColor = (CurrentOrder == OrderBy.Name) ? Color.Green : Color.PaleGreen; ;
-            UpcomingEventDateHeaderButton.BackColor = (CurrentOrder == OrderBy.Date) ? Color.Green : Color.PaleGreen;
-            UpcomingEventLocationHeaderButton.BackColor = (CurrentOrder == OrderBy.Location) ? Color.Green : Color.PaleGreen;
+            //UpcomingEventNameHeaderButton.BackColor = (CurrentOrder == OrderBy.Name) ? Color.Green : Color.PaleGreen; ;
+            //UpcomingEventDateHeaderButton.BackColor = (CurrentOrder == OrderBy.Date) ? Color.Green : Color.PaleGreen;
+            //UpcomingEventLocationHeaderButton.BackColor = (CurrentOrder == OrderBy.Location) ? Color.Green : Color.PaleGreen;
         }
 
         private void VolunteerEventsListView_ItemSelectionChanged(object sender,
@@ -253,8 +304,7 @@ namespace VolunteerAppClient
 
         private void MainWindow_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Server.ServiceProxy.UserLoggedOut();
-            Server.Disconnect();
+            Client.Disconnect();
 
             if (UserLoggedOut)
                 LoginForm.Show();
@@ -294,15 +344,19 @@ namespace VolunteerAppClient
 
         private void HideRegisteredEventsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            if (HideRegisteredEventsCheckBox.Checked)
-                HideRegisteredEvents();
-            else
-                HideRegisteredEvents(false);
+            HideRegisteredEvents(HideRegisteredEventsCheckBox.Checked);
+        }
+
+        private bool EventOverlap(EventInfo evt)
+        {
+            //var usersEvents = CurrentUser.RegisteredEvents
+            return false;
         }
 
         //todo: duration check for added events to prevent overlap 
         private void VolunteerEventsListView_ItemChecked(object sender, ItemCheckedEventArgs e)
         {
+
             if (e.Item.ForeColor == Color.Red)
                 e.Item.Checked = false;
 
@@ -340,9 +394,7 @@ namespace VolunteerAppClient
 
         private void ClearSelectedEvents()
         {
-            foreach (ListViewItem item in VolunteerEventsListView.Items)
-                item.Checked = false;
-
+            SelectedEventsListBox.Items.Clear();
             SelectedEventIds.Clear();
         }
 
@@ -367,97 +419,98 @@ namespace VolunteerAppClient
         private void ClearSelectedEventsButton_Click(object sender, EventArgs e)
         {
             ClearSelectedEvents();
+            foreach (ListViewItem item in VolunteerEventsListView.SelectedItems)
+            {
+                item.Checked = false;
+            }
         }
 
         private void RegisterForSelectedEventsButton_Click(object sender, EventArgs e)
         {
-            //todo: generate schedule/print preview and printing
-            //bool generateSchedule = GenerateScheduleCheckBox.Checked;
-
+            int[] eventIds = new int[VolunteerEventsListView.CheckedItems.Count];
+            int index = 0;
             foreach (ListViewItem item in VolunteerEventsListView.CheckedItems)
             {
-                Server.ServiceProxy.RegisterUserForEvent(CurrentUser.Id, Int32.Parse(item.SubItems[8].Text));
+                eventIds[index] = Int32.Parse(item.SubItems[8].Text);
+                index++;
             }
 
-            MessageBox.Show(string.Format("You registered for {0} events!", VolunteerEventsListView.CheckedItems.Count));
             ClearSelectedEvents();
-            LoadCurrentEvents(HideRegisteredEventsCheckBox.Checked, CurrentOrder);
-            UpdateLists();
+            foreach (ListViewItem item in VolunteerEventsListView.CheckedItems)
+            {
+                item.Checked = false;
+            }
+
+            Client.RegisterUserForEvent(CurrentUser.Id, eventIds);
+            if (GenerateScheduleCheckBox.Checked)
+            {
+                var events = EventList.FindAll(x => eventIds.Contains(x.Id)).ToArray();
+                HtmlBuilder.GenerateRegisteredReport(events, UserList);
+                var previewForm = new PreviewReportForm(0);
+                previewForm.ShowDialog();
+            }
+            else
+            {
+                MessageBox.Show(string.Format("You registered for {0} events!", eventIds.Length));
+            }
         }
 
         private void EventNameHeaderButton_Click(object sender, EventArgs e)
         {
-            if (CurrentOrder == OrderBy.Name)
-                LoadCurrentEvents(HideRegisteredEventsCheckBox.Checked, OrderBy.NameDesc);
-            else
-                LoadCurrentEvents(HideRegisteredEventsCheckBox.Checked, OrderBy.Name);
+            //if (CurrentOrder == OrderBy.Name)
+            //    LoadCurrentEvents(HideRegisteredEventsCheckBox.Checked, OrderBy.NameDesc);
+            //else
+            //    LoadCurrentEvents(HideRegisteredEventsCheckBox.Checked, OrderBy.Name);
 
             VolunteerEventsListView.Focus();
         }
 
         private void EventLocationHeaderButton_Click(object sender, EventArgs e)
         {
-            if (CurrentOrder == OrderBy.Location)
-                LoadCurrentEvents(HideRegisteredEventsCheckBox.Checked, OrderBy.LocationDesc);
-            else
-                LoadCurrentEvents(HideRegisteredEventsCheckBox.Checked, OrderBy.Location);
-
+            //if (CurrentOrder == OrderBy.Location)
+            //    LoadCurrentEvents(HideRegisteredEventsCheckBox.Checked, OrderBy.LocationDesc);
+            //else
+            //    LoadCurrentEvents(HideRegisteredEventsCheckBox.Checked, OrderBy.Location);
             VolunteerEventsListView.Focus();
         }
 
         private void EventDateHeaderButton_Click(object sender, EventArgs e)
         {
-            if (CurrentOrder == OrderBy.Date)
-                LoadCurrentEvents(HideRegisteredEventsCheckBox.Checked, OrderBy.DateDesc);
-            else
-                LoadCurrentEvents(HideRegisteredEventsCheckBox.Checked);
+            //if (CurrentOrder == OrderBy.Date)
+            //    LoadCurrentEvents(HideRegisteredEventsCheckBox.Checked, OrderBy.DateDesc);
+            //else
+            //    LoadCurrentEvents(HideRegisteredEventsCheckBox.Checked);
 
             VolunteerEventsListView.Focus();
         }
 
-        //create a user
-        private DialogResult ShowCreateUserForm()
+        private void ShowCreateUserForm()
         {
-            var createUserForm = new CreateUserForm(Server);
+            var createUserForm = new CreateUserForm(Client);
             createUserForm.ShowDialog();
-            return createUserForm.DialogResult;
         }
 
-        //edit a user
-        private DialogResult ShowUserForm(UserInfo usr, bool adminEdit = false, bool self = false)
+        private void ShowUserForm(UserInfo usr, bool adminEdit = false, bool self = false)
         {
-            var viewUserForm = new ViewUserForm(usr, adminEdit, Server, self);
+            var viewUserForm = new ViewUserForm(usr, adminEdit, Client, self);
             viewUserForm.ShowDialog(this);
-            return viewUserForm.DialogResult;
         }
 
-        //create an event
-        private DialogResult ShowCreateEventForm()
+        private void ShowCreateEventForm()
         {
-            var createEventForm = new CreateEventForm(CurrentUser, Server);
+            var createEventForm = new CreateEventForm(CurrentUser, Client);
             createEventForm.ShowDialog();
-            return createEventForm.DialogResult;
         }
 
-        //edit event; users: readOnly = true, admin: readOnly = false
-        private DialogResult ShowEventForm(bool readOnly = false)
+        private void ShowEventForm(EventInfo evt, bool readOnly = false)
         {
-            var selectedId = (!readOnly) ?
-                Int32.Parse(UserCreatedEventsListView.SelectedItems[0].SubItems[4].Text) :
-                Int32.Parse(UserRegisteredEventsListView.SelectedItems[0].SubItems[3].Text);
-
-            EventInfo selectedEvent = GetEventFromId(selectedId);
-
-            var eventForm = new ViewEventForm(selectedEvent, readOnly, Server);
+            var eventForm = new ViewEventForm(evt, readOnly, Client);
             eventForm.ShowDialog();
-            return eventForm.DialogResult;
         }
 
         private void UpdateInformationMenuItem_Click(object sender, EventArgs e)
         {
-            ShowUserForm(CurrentUser, false, true);
-            //todo: dialog result: if OK then
-            //UpdateLists(CurrentUser);
+            ShowUserForm(CurrentUser, CurrentUser.IsAdmin, true);
         }
 
         private void AdminCreateUserButton_Click(object sender, EventArgs e)
@@ -468,124 +521,225 @@ namespace VolunteerAppClient
         private void CreateNewEventButton_Click(object sender, EventArgs e)
         {
             ShowCreateEventForm();
-            //todo: dialog result: if ok then
-            //UpdateLists(CurrentUser);
         }
 
+        private delegate void AdminGetUsersCallBack();
         private void GetAllUsersToManage()
         {
-            AdminUserListView.Items.Clear();
-            foreach (var user in UserList)
+            if (AdminUserListView.InvokeRequired)
             {
-                var item = new ListViewItem(user.Username);
-                item.SubItems.Add(string.Format("{1}, {0}",
-                    user.FullName.Item1, user.FullName.Item2));
-                item.SubItems.Add(user.CreatedEvents.Count.ToString());
-                item.SubItems.Add(user.RegisteredEvents.Count.ToString());
-                item.SubItems.Add(user.Id.ToString());
-                item.SubItems.Add(user.IsAdmin.ToString());
-                AdminUserListView.Items.Add(item);
+                var callback = new AdminGetUsersCallBack(GetAllUsersToManage);
+                Invoke(callback);
             }
+            else
+            {
+                AdminUserListView.Items.Clear();
+                foreach (var user in UserList)
+                {
+                    var item = new ListViewItem(user.Username);
+                    item.SubItems.Add(string.Format("{1}, {0}",
+                        user.FullName.Item1, user.FullName.Item2));
+                    item.SubItems.Add(user.CreatedEvents.Count.ToString());
+                    item.SubItems.Add(user.RegisteredEvents.Count.ToString());
+                    item.SubItems.Add(user.Id.ToString());
+                    item.SubItems.Add(user.IsAdmin.ToString());
+                    AdminUserListView.Items.Add(item);
+                }
 
-            AdminUserListView.Items[0].Selected = true;
+                AdminUserListView.Items[0].Selected = true;
+            }
         }
 
+        private delegate void AdminGetEventsCallBack();
         private void GetAllEventsToManage()
         {
-            AdminEventListView.Items.Clear();
-            foreach (var evt in EventList)
+            if (AdminEventListView.InvokeRequired)
             {
-                var creator = GetUserFromId(evt.CreatorId);
-                var item = new ListViewItem(evt.Name);
-                item.SubItems.Add(evt.Date);
-                item.SubItems.Add(creator.Username);
-                item.SubItems.Add(evt.Id.ToString());
-                AdminEventListView.Items.Add(item);
+                var callback = new AdminGetEventsCallBack(GetAllEventsToManage);
+                Invoke(callback);
             }
+            else
+            {
+                List<ListViewItem> temp = new List<ListViewItem>();
+                AdminEventListView.Items.Clear();
+                foreach (var evt in EventList)
+                {
+                    var creator = GetUserFromId(evt.CreatorId);
+                    var item = new ListViewItem(evt.Name);
+                    item.SubItems.Add(evt.Date);
+                    item.SubItems.Add(creator.Username);
+                    item.SubItems.Add(evt.Id.ToString());
 
-            AdminEventListView.Items[0].Selected = true;
+                    if (!evt.Current)
+                        temp.Add(item);
+                    else
+                        AdminEventListView.Items.Add(item);
+                }
+
+                foreach(ListViewItem item in temp)
+                {
+                    item.ForeColor = Color.Red;
+                    AdminEventListView.Items.Add(item);
+                }
+
+                AdminEventListView.Items[0].Selected = true;
+            }
         }
 
+        private void UpdateAdminCounts()
+        {
+            AdminTotalUsersLabel.Invoke((MethodInvoker)(() =>
+                AdminTotalUsersLabel.Text = string.Format("Total Users: {0}", UserList.Count)));
+            AdminTotalCountLabel.Invoke((MethodInvoker)(() =>
+                AdminTotalCountLabel.Text = string.Format("Total Events: {0}", EventList.Count)));
+            AdminCurrentEventCountLabel.Invoke((MethodInvoker)(() =>
+                AdminCurrentEventCountLabel.Text = string.Format("Current Events: {0}",
+                EventList.FindAll(x => x.Current).Count)));
+        }
+
+        private void HideOldUserCreatedEvents(bool hidden = true)
+        {
+            if (hidden)
+            {
+                foreach (ListViewItem item in OldUserCreatedEventItems)
+                {
+                    if (UserCreatedEventsListView.Items.Contains(item))
+                        item.Remove();
+                }
+            }
+            else
+            {
+                foreach (ListViewItem item in OldUserCreatedEventItems)
+                {
+                    item.ForeColor = Color.Red;
+                    UserCreatedEventsListView.Items.Add(item);
+                }
+            }
+        }
+
+        private List<ListViewItem> OldUserCreatedEventItems;
+        private delegate void LoadUserCreatedCallBack();
         private void LoadUserCreatedEvents()
         {
-            UserCreatedEventsListView.Items.Clear();
-            var createdEvents = CurrentUser.CreatedEvents;
-            foreach (var id in createdEvents)
+            OldUserCreatedEventItems = new List<ListViewItem>();
+            if (UserCreatedEventsListView.InvokeRequired)
             {
-                EventInfo evt = GetEventFromId(id);
-                //visible subitems
-                var item = new ListViewItem(evt.Name);
-                item.SubItems.Add(evt.Date);
-
-                //'invisible' subitems
-                item.SubItems.Add(evt.StartTime.ToString("hh:mm tt") +
-                    " - " + evt.EndTime.ToString("hh:mm tt"));
-                item.SubItems.Add(evt.RegisteredUsers.Count.ToString());
-                item.SubItems.Add(evt.Id.ToString());
-                UserCreatedEventsListView.Items.Add(item);
-            }
-
-            if (UserCreatedEventsListView.Items.Count == 0)
-            {
-                UserCreatedEventsListView.Enabled = false;
-                UserCreatedEventsListView.Items.Add(new ListViewItem("You haven't created any events"));
+                var callBack = new LoadUserCreatedCallBack(LoadUserCreatedEvents);
+                Invoke(callBack);
             }
             else
             {
-                UserCreatedEventsListView.Enabled = true;
-            }
+                UserCreatedEventsListView.Items.Clear();
+                var createdEvents = CurrentUser.CreatedEvents;
+                foreach (var id in createdEvents)
+                {
+                    EventInfo evt = GetEventFromId(id);
+                    var item = new ListViewItem(evt.Name);
+                    item.SubItems.Add(evt.Date);
+                    item.SubItems.Add(evt.StartTime.ToString("hh:mm tt") +
+                        " - " + evt.EndTime.ToString("hh:mm tt"));
+                    item.SubItems.Add(evt.RegisteredUsers.Count.ToString());
+                    item.SubItems.Add(evt.Id.ToString());
 
-            UserCreatedEventsListView.Items[0].Selected = true;
+                    if (!evt.Current)
+                        OldUserCreatedEventItems.Add(item);
+                    else
+                        UserCreatedEventsListView.Items.Add(item);
+                }
+
+                if(ShowOldCreatedEventsCheckBox.Checked)
+                {
+                    foreach(ListViewItem item in OldUserCreatedEventItems)
+                    {
+                        item.ForeColor = Color.Red;
+                        UserCreatedEventsListView.Items.Add(item);
+                    }
+                }
+
+                if (UserCreatedEventsListView.Items.Count == 0)
+                {
+                    UserCreatedEventsListView.Enabled = false;
+                    UserCreatedEventsListView.Items.Add(new ListViewItem("You haven't created any events"));
+                }
+                else
+                {
+                    UserCreatedEventsListView.Enabled = true;
+                }
+
+                UserCreatedEventsListView.Items[0].Selected = true;
+            }
         }
 
+        private void HideOldUserRegisteredEvents(bool hidden = true)
+        {
+            if (hidden)
+            {
+                foreach (ListViewItem item in OldUserRegisteredEventItems)
+                {
+                    if (UserRegisteredEventsListView.Items.Contains(item))
+                        item.Remove();
+                }
+            }
+            else
+            {
+                foreach (ListViewItem item in OldUserRegisteredEventItems)
+                {
+                    item.ForeColor = Color.Red;
+                    UserRegisteredEventsListView.Items.Add(item);
+                }
+            }
+        }
+
+        private List<ListViewItem> OldUserRegisteredEventItems;
+        private delegate void LoadUserRegisteredCallBack();
         private void LoadUserRegisteredEvents()
         {
-            UserRegisteredEventsListView.Items.Clear();
-            var registeredEvents = CurrentUser.RegisteredEvents;
-            foreach (var id in registeredEvents)
+            OldUserRegisteredEventItems = new List<ListViewItem>();
+            if (UserRegisteredEventsListView.InvokeRequired)
             {
-                EventInfo evt = GetEventFromId(id);
-                var creator = GetUserFromId(evt.CreatorId);
-                //visible subitems
-                var item = new ListViewItem(evt.Name);
-                item.SubItems.Add(evt.Date);
-
-                //'invisible' subitems
-                item.SubItems.Add(creator.Username);
-                item.SubItems.Add(evt.Id.ToString());
-                    
-                UserRegisteredEventsListView.Items.Add(item);
-            }
-
-            if (UserRegisteredEventsListView.Items.Count == 0)
-            {
-                UserRegisteredEventsListView.Items.Add(new ListViewItem("You aren't registered for any events"));
-                UserRegisteredEventsListView.Enabled = false;
+                var callback = new LoadUserRegisteredCallBack(LoadUserRegisteredEvents);
+                Invoke(callback);
             }
             else
             {
-                UserRegisteredEventsListView.Enabled = true;
+                UserRegisteredEventsListView.Items.Clear();
+                var registeredEvents = CurrentUser.RegisteredEvents.FindAll(
+                    x => !CurrentUser.CreatedEvents.Contains(x));
+                foreach (var id in registeredEvents)
+                {
+                    EventInfo evt = GetEventFromId(id);
+                    var creator = GetUserFromId(evt.CreatorId);
+                    var item = new ListViewItem(evt.Name);
+                    item.SubItems.Add(evt.Date);
+                    item.SubItems.Add(creator.Username);
+                    item.SubItems.Add(evt.Id.ToString());
+
+                    if (!evt.Current)
+                        OldUserRegisteredEventItems.Add(item);
+                    else
+                        UserRegisteredEventsListView.Items.Add(item);
+                }
+
+                if (ShowOldRegisteredEventsCheckBox.Checked)
+                {
+                    foreach (ListViewItem item in OldUserRegisteredEventItems)
+                    {
+                        item.ForeColor = Color.Red;
+                        UserRegisteredEventsListView.Items.Add(item);
+                    }
+                }
+
+                if (UserRegisteredEventsListView.Items.Count == 0)
+                {
+                    UserRegisteredEventsListView.Items.Add(new ListViewItem("You aren't registered for any events"));
+                    UserRegisteredEventsListView.Enabled = false;
+                }
+                else
+                {
+                    UserRegisteredEventsListView.Enabled = true;
+                }
+                UserRegisteredEventsListView.Items[0].Selected = true;
             }
-
-            UserRegisteredEventsListView.Items[0].Selected = true;
-        }
-
-        private void MainTabControl_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            //switch (MainTabControl.SelectedIndex)
-            //{
-            //    case 0:
-            //        LoadCurrentEvents(HideRegisteredEventsCheckBox.Checked, CurrentOrder);
-            //        break;
-            //    case 1:
-            //        LoadUserCreatedEvents();
-            //        LoadUserRegisteredEvents();
-            //        break;
-            //    case 2:
-            //        GetAllEventsToManage();
-            //        GetAllUsersToManage();
-            //        break;
-            //}
         }
 
         private void UserCreatedEventsListView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
@@ -632,16 +786,14 @@ namespace VolunteerAppClient
 
         private void EditSelectedEventButton_Click(object sender, EventArgs e)
         {
-            ShowEventForm();
-            //todo: dialog result: if OK then
-            //UpdateLists(CurrentUser);
+            var selectedId = Int32.Parse(UserCreatedEventsListView.SelectedItems[0].SubItems[4].Text);
+            ShowEventForm(GetEventFromId(selectedId));
         }
 
         private void ViewSelectedEventButton_Click(object sender, EventArgs e)
         {
-            ShowEventForm(true);
-            //todo: dialog result: if OK then
-            //UpdateLists(CurrentUser);
+            var selectedId = Int32.Parse(UserRegisteredEventsListView.SelectedItems[0].SubItems[3].Text);
+            ShowEventForm(GetEventFromId(selectedId), true);
         }
 
         private void AdminUserListView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
@@ -667,56 +819,16 @@ namespace VolunteerAppClient
             }
         }
 
-        private void AdminEditUserButton_Click(object sender, EventArgs e)
-        {
-            var selectedId =
-                Int32.Parse(AdminUserListView.SelectedItems[0].SubItems[4].Text);
-            UserInfo selectedUser = null;
-
-            foreach (var user in UserList)
-            {
-                if (user.Id == selectedId)
-                {
-                    selectedUser = user;
-                    break;
-                }
-            }
-
-            ShowUserForm(selectedUser, true, selectedUser.Username == CurrentUser.Username);
-            //todo: diagog result: if OK then
-            //UpdateLists(CurrentUser);
-        }
-
-        private void AdminEditEventButton_Click(object sender, EventArgs e)
-        {
-            var selectedId =
-                Int32.Parse(AdminEventListView.SelectedItems[0].SubItems[3].Text);
-            EventInfo selectedEvent = null;
-
-            foreach (var evt in EventList)
-            {
-                if (evt.Id == selectedId)
-                {
-                    selectedEvent = evt;
-                    break;
-                }
-            }
-
-            var eventForm = new ViewEventForm(selectedEvent, false, Server);
-            eventForm.ShowDialog();
-            UpdateLists();
-        }
-
         private void DeleteSelectedEventButton_Click(object sender, EventArgs e)
         {
-            //todo: functionality for deleting a created event
-            //UpdateLists(CurrentUser);
+            var selectedId = Int32.Parse(UserCreatedEventsListView.SelectedItems[0].SubItems[4].Text);
+            Client.DeleteSelectedEvent(selectedId);
         }
 
         private void UnregisterFromEventButton_Click(object sender, EventArgs e)
         {
-            //todo: functionality for unregistering for an event
-            //UpdateLists(CurrentUser);
+            var selectedId = Int32.Parse(UserRegisteredEventsListView.SelectedItems[0].SubItems[3].Text);
+            Client.UnregisterUserForEvent(CurrentUser.Id, selectedId);
         }
 
         private void GenerateEventScheduleButton_Click(object sender, EventArgs e)
@@ -725,27 +837,59 @@ namespace VolunteerAppClient
             //bool includeCreated = IncludeCreatedEventsCheckBox.Checked;
         }
 
+        private void AdminEditUserButton_Click(object sender, EventArgs e)
+        {
+            var selectedId =
+                Int32.Parse(AdminUserListView.SelectedItems[0].SubItems[4].Text);
+            UserInfo selectedUser = GetUserFromId(selectedId);
+
+            ShowUserForm(selectedUser, true, selectedUser.Username == CurrentUser.Username);
+        }
+
+        private void AdminEditEventButton_Click(object sender, EventArgs e)
+        {
+            var selectedId =
+                Int32.Parse(AdminEventListView.SelectedItems[0].SubItems[3].Text);
+            ShowEventForm(GetEventFromId(selectedId));
+        }
+
         private void AdminDeleteUserButton_Click(object sender, EventArgs e)
         {
-            //odo: admin functionality for deleting a user
-            //UpdateLists(CurrentUser);
+            var selectedId = Int32.Parse(AdminUserListView.SelectedItems[0].SubItems[4].Text);
+            Client.DeletedSelectedUser(selectedId);
         }
 
         private void AdminDeleteEventButton_Click(object sender, EventArgs e)
         {
-            //todo: admin functionality for deleting entire event
-            //UpdateLists(CurrentUser);
-        }
-
-        private void AdminRegisterUserButton_Click(object sender, EventArgs e)
-        {
-            //todo: admin functionality for manually registering a user for an event
-            //UpdateLists(CurrentUser);
+            var selectedId = Int32.Parse(AdminEventListView.SelectedItems[0].SubItems[3].Text);
+            Client.DeleteSelectedEvent(selectedId);
         }
 
         private void AdminGnerateReportButton_Click(object sender, EventArgs e)
         {
             //todo: admin generate event report
+        }
+
+        private void ShowSendEmailForm(string recipient)
+        {
+            var EmailForm = new SendEmailForm(recipient, CurrentUser.Username);
+            EmailForm.ShowDialog();
+        }
+
+        private void ContactEmailAddress_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            var recipient = (sender as LinkLabel).Text;
+            ShowSendEmailForm(recipient);
+        }
+
+        private void ShowOldCreatedEventsCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            HideOldUserCreatedEvents(!ShowOldCreatedEventsCheckBox.Checked);
+        }
+
+        private void ShowOldRegisteredEventsCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            HideOldUserRegisteredEvents(!ShowOldRegisteredEventsCheckBox.Checked);
         }
     }
 }

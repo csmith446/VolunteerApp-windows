@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VolunteerAppServer", "Volun
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VolunteerAppClient", "VolunteerAppClient\VolunteerAppClient.csproj", "{8C0D22DE-4538-49B8-A35F-DC7BD38F7A3C}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "VolAppServerInstaller", "VolAppServerInstaller\VolAppServerInstaller.vdproj", "{0946F39C-FF05-4674-AC3D-E6C15959F520}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "VolAppClientInstaller", "VolAppClientInstaller\VolAppClientInstaller.vdproj", "{4C9E6D49-276D-4A0D-9C72-20CE01331A3D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,10 @@ Global
 		{8C0D22DE-4538-49B8-A35F-DC7BD38F7A3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C0D22DE-4538-49B8-A35F-DC7BD38F7A3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8C0D22DE-4538-49B8-A35F-DC7BD38F7A3C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0946F39C-FF05-4674-AC3D-E6C15959F520}.Debug|Any CPU.ActiveCfg = Debug
+		{0946F39C-FF05-4674-AC3D-E6C15959F520}.Release|Any CPU.ActiveCfg = Release
+		{4C9E6D49-276D-4A0D-9C72-20CE01331A3D}.Debug|Any CPU.ActiveCfg = Debug
+		{4C9E6D49-276D-4A0D-9C72-20CE01331A3D}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

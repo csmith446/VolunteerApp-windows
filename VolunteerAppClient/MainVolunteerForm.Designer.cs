@@ -44,7 +44,8 @@
             this.MainToolTip = new System.Windows.Forms.ToolTip(this.components);
             this.AdminTab = new System.Windows.Forms.TabPage();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.AdminRegisterUserButton = new System.Windows.Forms.Button();
+            this.AdminCurrentEventCountLabel = new System.Windows.Forms.Label();
+            this.AdminTotalCountLabel = new System.Windows.Forms.Label();
             this.AdminDeleteEventButton = new System.Windows.Forms.Button();
             this.AdminEditEventButton = new System.Windows.Forms.Button();
             this.AdminGnerateReportButton = new System.Windows.Forms.Button();
@@ -57,6 +58,7 @@
             this.columnHeader7 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.AdminEventNameHeaderButton = new System.Windows.Forms.Button();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.AdminTotalUsersLabel = new System.Windows.Forms.Label();
             this.panel4 = new System.Windows.Forms.Panel();
             this.AdminUserCreatedEventLabel = new System.Windows.Forms.Label();
             this.AdminUserRegisteredEvents = new System.Windows.Forms.Label();
@@ -72,6 +74,7 @@
             this.columnHeader9 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.MyEventsTab = new System.Windows.Forms.TabPage();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.ShowOldRegisteredEventsCheckBox = new System.Windows.Forms.CheckBox();
             this.IncludeCreatedEventsCheckBox = new System.Windows.Forms.CheckBox();
             this.UnregisterFromEventButton = new System.Windows.Forms.Button();
             this.ViewSelectedEventButton = new System.Windows.Forms.Button();
@@ -85,6 +88,7 @@
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.RegisteredEventNameHeaderButton = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.ShowOldCreatedEventsCheckBox = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.CreatedEventTimeLabel = new System.Windows.Forms.Label();
             this.CreatedEventAttendees = new System.Windows.Forms.Label();
@@ -129,8 +133,6 @@
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.MainTabControl = new System.Windows.Forms.TabControl();
-            this.ShowOldCreatedEventsCheckBox = new System.Windows.Forms.CheckBox();
-            this.ShowOldRegisteredEventsCheckBox = new System.Windows.Forms.CheckBox();
             this.MainStatusStrip.SuspendLayout();
             this.MainFormMenuStrip.SuspendLayout();
             this.AdminTab.SuspendLayout();
@@ -175,9 +177,9 @@
             // 
             this.RegisteredEventCountLabel.AutoSize = false;
             this.RegisteredEventCountLabel.ForeColor = System.Drawing.Color.Green;
-            this.RegisteredEventCountLabel.Margin = new System.Windows.Forms.Padding(180, 3, 0, 2);
+            this.RegisteredEventCountLabel.Margin = new System.Windows.Forms.Padding(140, 3, 0, 2);
             this.RegisteredEventCountLabel.Name = "RegisteredEventCountLabel";
-            this.RegisteredEventCountLabel.Size = new System.Drawing.Size(184, 17);
+            this.RegisteredEventCountLabel.Size = new System.Drawing.Size(220, 17);
             this.RegisteredEventCountLabel.Text = "[registered count]";
             this.RegisteredEventCountLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
@@ -260,7 +262,8 @@
             // 
             // groupBox3
             // 
-            this.groupBox3.Controls.Add(this.AdminRegisterUserButton);
+            this.groupBox3.Controls.Add(this.AdminCurrentEventCountLabel);
+            this.groupBox3.Controls.Add(this.AdminTotalCountLabel);
             this.groupBox3.Controls.Add(this.AdminDeleteEventButton);
             this.groupBox3.Controls.Add(this.AdminEditEventButton);
             this.groupBox3.Controls.Add(this.AdminGnerateReportButton);
@@ -275,19 +278,25 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Manage Events";
             // 
-            // AdminRegisterUserButton
+            // AdminCurrentEventCountLabel
             // 
-            this.AdminRegisterUserButton.BackColor = System.Drawing.Color.SandyBrown;
-            this.AdminRegisterUserButton.FlatAppearance.BorderColor = System.Drawing.SystemColors.WindowFrame;
-            this.AdminRegisterUserButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.AdminRegisterUserButton.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.AdminRegisterUserButton.Location = new System.Drawing.Point(229, 346);
-            this.AdminRegisterUserButton.Name = "AdminRegisterUserButton";
-            this.AdminRegisterUserButton.Size = new System.Drawing.Size(113, 30);
-            this.AdminRegisterUserButton.TabIndex = 22;
-            this.AdminRegisterUserButton.Text = "Register User";
-            this.AdminRegisterUserButton.UseVisualStyleBackColor = false;
-            this.AdminRegisterUserButton.Click += new System.EventHandler(this.AdminRegisterUserButton_Click);
+            this.AdminCurrentEventCountLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.AdminCurrentEventCountLabel.Location = new System.Drawing.Point(192, 439);
+            this.AdminCurrentEventCountLabel.Name = "AdminCurrentEventCountLabel";
+            this.AdminCurrentEventCountLabel.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.AdminCurrentEventCountLabel.Size = new System.Drawing.Size(152, 14);
+            this.AdminCurrentEventCountLabel.TabIndex = 23;
+            this.AdminCurrentEventCountLabel.Text = "[count]";
+            this.AdminCurrentEventCountLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // AdminTotalCountLabel
+            // 
+            this.AdminTotalCountLabel.AutoSize = true;
+            this.AdminTotalCountLabel.Location = new System.Drawing.Point(6, 440);
+            this.AdminTotalCountLabel.Name = "AdminTotalCountLabel";
+            this.AdminTotalCountLabel.Size = new System.Drawing.Size(40, 13);
+            this.AdminTotalCountLabel.TabIndex = 22;
+            this.AdminTotalCountLabel.Text = "[count]";
             // 
             // AdminDeleteEventButton
             // 
@@ -295,9 +304,9 @@
             this.AdminDeleteEventButton.FlatAppearance.BorderColor = System.Drawing.SystemColors.WindowFrame;
             this.AdminDeleteEventButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.AdminDeleteEventButton.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.AdminDeleteEventButton.Location = new System.Drawing.Point(118, 346);
+            this.AdminDeleteEventButton.Location = new System.Drawing.Point(174, 346);
             this.AdminDeleteEventButton.Name = "AdminDeleteEventButton";
-            this.AdminDeleteEventButton.Size = new System.Drawing.Size(112, 30);
+            this.AdminDeleteEventButton.Size = new System.Drawing.Size(170, 30);
             this.AdminDeleteEventButton.TabIndex = 21;
             this.AdminDeleteEventButton.Text = "Delete Event";
             this.AdminDeleteEventButton.UseVisualStyleBackColor = false;
@@ -311,7 +320,7 @@
             this.AdminEditEventButton.ForeColor = System.Drawing.SystemColors.ControlText;
             this.AdminEditEventButton.Location = new System.Drawing.Point(6, 346);
             this.AdminEditEventButton.Name = "AdminEditEventButton";
-            this.AdminEditEventButton.Size = new System.Drawing.Size(113, 30);
+            this.AdminEditEventButton.Size = new System.Drawing.Size(169, 30);
             this.AdminEditEventButton.TabIndex = 20;
             this.AdminEditEventButton.Text = "Edit Event";
             this.AdminEditEventButton.UseVisualStyleBackColor = false;
@@ -351,6 +360,7 @@
             this.AdminEventContactEmail.TabIndex = 15;
             this.AdminEventContactEmail.TabStop = true;
             this.AdminEventContactEmail.Text = "[email]";
+            this.AdminEventContactEmail.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.ContactEmailAddress_LinkClicked);
             // 
             // AdminEventCreatorLabel
             // 
@@ -417,6 +427,7 @@
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.AdminTotalUsersLabel);
             this.groupBox4.Controls.Add(this.panel4);
             this.groupBox4.Controls.Add(this.AdminDeleteUserButton);
             this.groupBox4.Controls.Add(this.AdminEditUserButton);
@@ -430,6 +441,15 @@
             this.groupBox4.TabIndex = 2;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Manage Users";
+            // 
+            // AdminTotalUsersLabel
+            // 
+            this.AdminTotalUsersLabel.AutoSize = true;
+            this.AdminTotalUsersLabel.Location = new System.Drawing.Point(6, 440);
+            this.AdminTotalUsersLabel.Name = "AdminTotalUsersLabel";
+            this.AdminTotalUsersLabel.Size = new System.Drawing.Size(40, 13);
+            this.AdminTotalUsersLabel.TabIndex = 17;
+            this.AdminTotalUsersLabel.Text = "[count]";
             // 
             // panel4
             // 
@@ -606,6 +626,17 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Registered Events (Not Created)";
             // 
+            // ShowOldRegisteredEventsCheckBox
+            // 
+            this.ShowOldRegisteredEventsCheckBox.AutoSize = true;
+            this.ShowOldRegisteredEventsCheckBox.Location = new System.Drawing.Point(6, 315);
+            this.ShowOldRegisteredEventsCheckBox.Name = "ShowOldRegisteredEventsCheckBox";
+            this.ShowOldRegisteredEventsCheckBox.Size = new System.Drawing.Size(108, 17);
+            this.ShowOldRegisteredEventsCheckBox.TabIndex = 24;
+            this.ShowOldRegisteredEventsCheckBox.Text = "Show Old Events";
+            this.ShowOldRegisteredEventsCheckBox.UseVisualStyleBackColor = true;
+            this.ShowOldRegisteredEventsCheckBox.CheckedChanged += new System.EventHandler(this.ShowOldRegisteredEventsCheckBox_CheckedChanged);
+            // 
             // IncludeCreatedEventsCheckBox
             // 
             this.IncludeCreatedEventsCheckBox.AutoSize = true;
@@ -680,6 +711,7 @@
             this.RegisteredEventContactEmail.TabIndex = 15;
             this.RegisteredEventContactEmail.TabStop = true;
             this.RegisteredEventContactEmail.Text = "[email]";
+            this.RegisteredEventContactEmail.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.ContactEmailAddress_LinkClicked);
             // 
             // RegisteredEventContactLabel
             // 
@@ -760,6 +792,17 @@
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Created Events";
+            // 
+            // ShowOldCreatedEventsCheckBox
+            // 
+            this.ShowOldCreatedEventsCheckBox.AutoSize = true;
+            this.ShowOldCreatedEventsCheckBox.Location = new System.Drawing.Point(6, 315);
+            this.ShowOldCreatedEventsCheckBox.Name = "ShowOldCreatedEventsCheckBox";
+            this.ShowOldCreatedEventsCheckBox.Size = new System.Drawing.Size(108, 17);
+            this.ShowOldCreatedEventsCheckBox.TabIndex = 23;
+            this.ShowOldCreatedEventsCheckBox.Text = "Show Old Events";
+            this.ShowOldCreatedEventsCheckBox.UseVisualStyleBackColor = true;
+            this.ShowOldCreatedEventsCheckBox.CheckedChanged += new System.EventHandler(this.ShowOldCreatedEventsCheckBox_CheckedChanged);
             // 
             // panel1
             // 
@@ -1123,6 +1166,7 @@
             this.DetailedContactEmailLink.TabIndex = 12;
             this.DetailedContactEmailLink.TabStop = true;
             this.DetailedContactEmailLink.Text = "[email]";
+            this.DetailedContactEmailLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.ContactEmailAddress_LinkClicked);
             this.DetailedContactEmailLink.MouseHover += new System.EventHandler(this.ContactEmailLabel_Hover);
             // 
             // DetailedContactNameLabel
@@ -1268,27 +1312,6 @@
             this.MainTabControl.SelectedIndex = 0;
             this.MainTabControl.Size = new System.Drawing.Size(734, 495);
             this.MainTabControl.TabIndex = 2;
-            this.MainTabControl.SelectedIndexChanged += new System.EventHandler(this.MainTabControl_SelectedIndexChanged);
-            // 
-            // ShowOldCreatedEventsCheckBox
-            // 
-            this.ShowOldCreatedEventsCheckBox.AutoSize = true;
-            this.ShowOldCreatedEventsCheckBox.Location = new System.Drawing.Point(6, 315);
-            this.ShowOldCreatedEventsCheckBox.Name = "ShowOldCreatedEventsCheckBox";
-            this.ShowOldCreatedEventsCheckBox.Size = new System.Drawing.Size(108, 17);
-            this.ShowOldCreatedEventsCheckBox.TabIndex = 23;
-            this.ShowOldCreatedEventsCheckBox.Text = "Show Old Events";
-            this.ShowOldCreatedEventsCheckBox.UseVisualStyleBackColor = true;
-            // 
-            // ShowOldRegisteredEventsCheckBox
-            // 
-            this.ShowOldRegisteredEventsCheckBox.AutoSize = true;
-            this.ShowOldRegisteredEventsCheckBox.Location = new System.Drawing.Point(6, 315);
-            this.ShowOldRegisteredEventsCheckBox.Name = "ShowOldRegisteredEventsCheckBox";
-            this.ShowOldRegisteredEventsCheckBox.Size = new System.Drawing.Size(108, 17);
-            this.ShowOldRegisteredEventsCheckBox.TabIndex = 24;
-            this.ShowOldRegisteredEventsCheckBox.Text = "Show Old Events";
-            this.ShowOldRegisteredEventsCheckBox.UseVisualStyleBackColor = true;
             // 
             // MainVolunteerForm
             // 
@@ -1312,9 +1335,11 @@
             this.MainFormMenuStrip.PerformLayout();
             this.AdminTab.ResumeLayout(false);
             this.groupBox3.ResumeLayout(false);
+            this.groupBox3.PerformLayout();
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
             this.groupBox4.ResumeLayout(false);
+            this.groupBox4.PerformLayout();
             this.panel4.ResumeLayout(false);
             this.panel4.PerformLayout();
             this.MyEventsTab.ResumeLayout(false);
@@ -1408,7 +1433,6 @@
         private System.Windows.Forms.Button EditSelectedEventButton;
         private System.Windows.Forms.Button CreateNewEventButton;
         private System.Windows.Forms.GroupBox groupBox3;
-        private System.Windows.Forms.Button AdminRegisterUserButton;
         private System.Windows.Forms.Button AdminDeleteEventButton;
         private System.Windows.Forms.Button AdminEditEventButton;
         private System.Windows.Forms.Button AdminGnerateReportButton;
@@ -1443,5 +1467,8 @@
         private System.Windows.Forms.CheckBox IncludeCreatedEventsCheckBox;
         private System.Windows.Forms.CheckBox ShowOldRegisteredEventsCheckBox;
         private System.Windows.Forms.CheckBox ShowOldCreatedEventsCheckBox;
+        private System.Windows.Forms.Label AdminCurrentEventCountLabel;
+        private System.Windows.Forms.Label AdminTotalCountLabel;
+        private System.Windows.Forms.Label AdminTotalUsersLabel;
     }
 }

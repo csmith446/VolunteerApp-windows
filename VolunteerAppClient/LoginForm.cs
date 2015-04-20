@@ -16,7 +16,7 @@ namespace VolunteerAppClient
 {
     public partial class LoginForm : Form
     {
-        private IScsServiceClient<IVolunteerServer> Server;
+        //private IScsServiceClient<IVolunteerServer> Server;
         private ClientService Client;
 
         public LoginForm()
@@ -26,32 +26,7 @@ namespace VolunteerAppClient
             EmailAddressTextBox.Text = "csmith34@spsu.edu";
             PasswordTextBox.Text = "Chaeson1";
 #endif
-
             Client = new ClientService(this);
-            Server = ScsServiceClientBuilder.CreateClient<IVolunteerServer>(
-                new ScsTcpEndPoint("127.0.0.1", 31415), Client);
-            Server.ConnectTimeout = 5000;
-
-            Server.Connected += Server_Connected;
-            Server.Disconnected += Server_Disconnected;
-        }
-
-        void Server_Disconnected(object sender, EventArgs e)
-        {
-            //do stuff when client disconnects from server
-        }
-
-        void Server_Connected(object sender, EventArgs e)
-        {
-            //do stuff when client connects to server
-        }
-
-        private bool UserLoggedIn(string username, string password)
-        {
-            if (Server.ServiceProxy.CheckCredentials(username, MD5Hasher.GetHashedValue(password)))
-                return true;
-
-            return false;
         }
 
         private bool ValidateForm(string username, string password)
@@ -64,18 +39,17 @@ namespace VolunteerAppClient
 
         private void BeginUserLogin()
         {
-            try
-            {
-                Server.Connect();
-                string username = EmailAddressTextBox.Text.ToLower();
-                string password = PasswordTextBox.Text;
+            //try
+            //{
+                string username = EmailAddressTextBox.Text.Trim().ToLower();
+                string password = PasswordTextBox.Text.Trim();
+                UserInfo user = null;
 
                 if (ValidateForm(username, password))
                 {
-                    if (UserLoggedIn(username, password))
+                    if (Client.LogInUser(username, password,out user))
                     {
-                        var user = Server.ServiceProxy.GetLoggedOnUser();
-                        var mainForm = new MainVolunteerForm(user, this, Server);
+                        var mainForm = new MainVolunteerForm(user, this, Client);
                         ErrorMessageLabel.Visible = false;
 
                         this.Hide();
@@ -85,25 +59,22 @@ namespace VolunteerAppClient
                     {
                         ErrorMessageLabel.Text = "The email and password do not match.";
                         ErrorMessageLabel.Visible = true;
-                        Server.Disconnect();
                     }
                 }
                 else
                 {
                     ErrorMessageLabel.Text = "The email and password cannot be blank.";
                     ErrorMessageLabel.Visible = true;
-                    Server.Disconnect();
                 }
 
                 EmailAddressTextBox.Clear();
                 PasswordTextBox.Clear();
                 EmailAddressTextBox.Focus();
-            }
-            catch
-            {
-                //connection timeout
-                MessageBox.Show("Oops! The server appears to be down.");
-            }
+            //}
+            //catch
+            //{
+            //    MessageBox.Show("Oops! The server appears to be down.");
+            //}
         }
 
         private void LoginButton_Click(object sender, EventArgs e)
@@ -113,7 +84,7 @@ namespace VolunteerAppClient
 
         private void ShowNewUserForm()
         {
-            var createUser = new RegistrationForm(Server);
+            var createUser = new RegistrationForm(Client);
             createUser.ShowDialog();
         }
 

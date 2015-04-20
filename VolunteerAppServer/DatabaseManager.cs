@@ -134,12 +134,30 @@ namespace VolunteerAppServer
         /// Registers a user for an event.
         /// </summary>
         /// <param name="userId"></param>
-        /// <param name="eventId"></param>
-        static public void RegisterUserForEvent(int userId, int eventId)
+        /// <param name="eventIds"></param>
+        static public void RegisterUserForEvent(int userId, int[] eventIds)
         {
             using (var connection = GetConnection())
             {
                 string query = "INSERT INTO Registered_Events(EventID,UserID) VALUES(@eId,@uId)";
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = query;
+                foreach (var id in eventIds)
+                {
+                    cmd.Parameters.Clear();
+                    cmd.Parameters.AddWithValue("@uId", userId);
+                    cmd.Parameters.AddWithValue("@eId", id);
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        static public void UnregisterUserForEvent(int userId, int eventId)
+        {
+            using (var connection = GetConnection())
+            {
+                string query = "DELETE FROM Registered_Events WHERE EventId = @eId and UserId = @uId";
                 var cmd = connection.CreateCommand();
                 cmd.CommandText = query;
                 cmd.Parameters.AddWithValue("@uId", userId);
@@ -213,9 +231,8 @@ namespace VolunteerAppServer
 
             using (var connection = GetConnection())
             {
-                string query = "SELECT Registered_Events.EventID FROM Registered_Events JOIN Events " +
-                               "ON Registered_Events.EventID = Events.ID WHERE UserID = @userId and " +
-                               "Events.ContactInfoID <> @userId";
+                string query = "SELECT Registered_Events.EventID FROM Registered_Events " +
+                               "WHERE UserID = @userId";
                 var cmd = connection.CreateCommand();
                 cmd.CommandText = query;
                 cmd.Parameters.AddWithValue("@userId", userId);
@@ -461,7 +478,8 @@ namespace VolunteerAppServer
                 cmd.Parameters.AddWithValue("@contactId", userId);
 
                 cmd.ExecuteNonQuery();
-                RegisterUserForEvent(userId, GetEventIDFromName(name));
+                int[] id = { GetEventIDFromName(name) };
+                RegisterUserForEvent(userId, id);
             }
         }
 
@@ -530,6 +548,42 @@ namespace VolunteerAppServer
 
                 cmd.ExecuteNonQuery();
                 UpdateUserContactInfo(GetContactIDForUser(userId), username, phoneNumber);
+            }
+        }
+
+        static public void DeleteEventFromDatabase(int eventId)
+        {
+            using (var connection = GetConnection())
+            {
+                string fQuery = "DELETE FROM Registered_Events WHERE EventID = @id";
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = fQuery;
+                cmd.Parameters.AddWithValue("@id", eventId);
+                cmd.ExecuteNonQuery();
+
+                string sQuery = "DELETE FROM Events WHERE ID = @id";
+                cmd.CommandText = sQuery;
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        static public void DeleteUserFromDatabase(int userId)
+        {
+            using (var connection = GetConnection())
+            {
+                string fQuery = "DELETE FROM Registered_Events WHERE UserID = @id";
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = fQuery;
+                cmd.Parameters.AddWithValue("@id", userId);
+                cmd.ExecuteNonQuery();
+
+                string sQuery = "DELETE FROM ContactInfo WHERE ID = @id";
+                cmd.CommandText = sQuery;
+                cmd.ExecuteNonQuery();
+
+                string tQuery = "DELETE FROM Users WHERE ID = @id";
+                cmd.CommandText = tQuery;
+                cmd.ExecuteNonQuery();
             }
         }
     }
