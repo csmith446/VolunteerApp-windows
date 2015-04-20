@@ -336,7 +336,7 @@
             this.AdminGnerateReportButton.Name = "AdminGnerateReportButton";
             this.AdminGnerateReportButton.Size = new System.Drawing.Size(338, 40);
             this.AdminGnerateReportButton.TabIndex = 19;
-            this.AdminGnerateReportButton.Text = "Generate Event Report";
+            this.AdminGnerateReportButton.Text = "Generate Administrator Report";
             this.AdminGnerateReportButton.UseVisualStyleBackColor = false;
             this.AdminGnerateReportButton.Click += new System.EventHandler(this.AdminGnerateReportButton_Click);
             // 
@@ -863,7 +863,7 @@
             this.DeleteSelectedEventButton.Name = "DeleteSelectedEventButton";
             this.DeleteSelectedEventButton.Size = new System.Drawing.Size(169, 30);
             this.DeleteSelectedEventButton.TabIndex = 11;
-            this.DeleteSelectedEventButton.Text = "Delete Selected Event";
+            this.DeleteSelectedEventButton.Text = "Delete Created Event";
             this.DeleteSelectedEventButton.UseVisualStyleBackColor = false;
             this.DeleteSelectedEventButton.Click += new System.EventHandler(this.DeleteSelectedEventButton_Click);
             // 
@@ -877,7 +877,7 @@
             this.EditSelectedEventButton.Name = "EditSelectedEventButton";
             this.EditSelectedEventButton.Size = new System.Drawing.Size(170, 30);
             this.EditSelectedEventButton.TabIndex = 10;
-            this.EditSelectedEventButton.Text = "Edit Selected Event";
+            this.EditSelectedEventButton.Text = "Edit Created Event";
             this.EditSelectedEventButton.UseVisualStyleBackColor = false;
             this.EditSelectedEventButton.Click += new System.EventHandler(this.EditSelectedEventButton_Click);
             // 

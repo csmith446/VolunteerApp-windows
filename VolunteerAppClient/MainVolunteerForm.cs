@@ -760,7 +760,7 @@ namespace VolunteerAppClient
                 CreatedEventTime.Text = e.Item.SubItems[2].Text;
                 CreatedEventAttendees.Text = e.Item.SubItems[3].Text;
                 EditSelectedEventButton.Enabled = true;
-                DeleteSelectedEventButton.Enabled = true;
+                DeleteSelectedEventButton.Enabled = e.Item.ForeColor != Color.Red;
             }
         }
 
@@ -780,7 +780,7 @@ namespace VolunteerAppClient
             {
                 RegisteredEventContactEmail.Text = e.Item.SubItems[2].Text;
                 ViewSelectedEventButton.Enabled = true;
-                UnregisterFromEventButton.Enabled = true;
+                UnregisterFromEventButton.Enabled = e.Item.ForeColor != Color.Red;
             }
         }
 
@@ -833,8 +833,13 @@ namespace VolunteerAppClient
 
         private void GenerateEventScheduleButton_Click(object sender, EventArgs e)
         {
-            //todo: functionality for generating/printing event schedule 
-            //bool includeCreated = IncludeCreatedEventsCheckBox.Checked;
+            var events = (IncludeCreatedEventsCheckBox.Checked) ?
+                EventList.FindAll(x => CurrentUser.RegisteredEvents.Contains(x.Id)).ToArray() :
+                EventList.FindAll(x => CurrentUser.RegisteredEvents.Contains(x.Id) && !CurrentUser.CreatedEvents.Contains(x.Id)).ToArray();
+
+            HtmlBuilder.GenerateUserSchedule(CurrentUser, events, UserList);
+            var previewForm = new PreviewReportForm(1);
+            previewForm.ShowDialog();
         }
 
         private void AdminEditUserButton_Click(object sender, EventArgs e)
@@ -867,7 +872,9 @@ namespace VolunteerAppClient
 
         private void AdminGnerateReportButton_Click(object sender, EventArgs e)
         {
-            //todo: admin generate event report
+            HtmlBuilder.GenerateAdminReport(UserList, EventList);
+            var previewForm = new PreviewReportForm(2);
+            previewForm.ShowDialog();
         }
 
         private void ShowSendEmailForm(string recipient)

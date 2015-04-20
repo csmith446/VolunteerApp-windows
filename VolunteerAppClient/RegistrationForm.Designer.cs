@@ -91,6 +91,7 @@
             // LastNameTextBox
             // 
             this.LastNameTextBox.Location = new System.Drawing.Point(130, 57);
+            this.LastNameTextBox.MaxLength = 64;
             this.LastNameTextBox.Name = "LastNameTextBox";
             this.LastNameTextBox.Size = new System.Drawing.Size(175, 20);
             this.LastNameTextBox.TabIndex = 1;
@@ -100,6 +101,7 @@
             // FirstNameTextBox
             // 
             this.FirstNameTextBox.Location = new System.Drawing.Point(130, 27);
+            this.FirstNameTextBox.MaxLength = 64;
             this.FirstNameTextBox.Name = "FirstNameTextBox";
             this.FirstNameTextBox.Size = new System.Drawing.Size(175, 20);
             this.FirstNameTextBox.TabIndex = 0;
@@ -144,6 +146,7 @@
             // EmailAddressTextBox
             // 
             this.EmailAddressTextBox.Location = new System.Drawing.Point(130, 27);
+            this.EmailAddressTextBox.MaxLength = 64;
             this.EmailAddressTextBox.Name = "EmailAddressTextBox";
             this.EmailAddressTextBox.Size = new System.Drawing.Size(175, 20);
             this.EmailAddressTextBox.TabIndex = 3;
@@ -152,6 +155,7 @@
             // PasswordTextBox
             // 
             this.PasswordTextBox.Location = new System.Drawing.Point(130, 58);
+            this.PasswordTextBox.MaxLength = 64;
             this.PasswordTextBox.Name = "PasswordTextBox";
             this.PasswordTextBox.PasswordChar = '•';
             this.PasswordTextBox.Size = new System.Drawing.Size(175, 20);
@@ -162,6 +166,7 @@
             // ConfirmPasswordTextBox
             // 
             this.ConfirmPasswordTextBox.Location = new System.Drawing.Point(130, 90);
+            this.ConfirmPasswordTextBox.MaxLength = 64;
             this.ConfirmPasswordTextBox.Name = "ConfirmPasswordTextBox";
             this.ConfirmPasswordTextBox.PasswordChar = '•';
             this.ConfirmPasswordTextBox.Size = new System.Drawing.Size(175, 20);

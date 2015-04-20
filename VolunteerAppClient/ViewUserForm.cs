@@ -51,7 +51,7 @@ namespace VolunteerAppClient
             IsAdminCheckBox.Visible = adminEdit;
             IsAdminCheckBox.Enabled = !UserToEdit.IsAdmin;
             ChangePasswordCheckBox.Visible = self || !UserToEdit.IsAdmin;
-            SaveChangesButton.Enabled = adminEdit || self;
+            SaveChangesButton.Enabled = (adminEdit && !UserToEdit.IsAdmin) || self;
         }
 
         private void SetEditValues()
