@@ -16,7 +16,7 @@ namespace VolunteerAppClient
         {
             LoginWindow = Login;
             Server = ScsServiceClientBuilder.CreateClient<IVolunteerServer>(
-                new ScsTcpEndPoint("127.0.0.1", 31415), this);
+                new ScsTcpEndPoint("76.20.234.235", 31415), this);
             Server.ConnectTimeout = 5000;
 
             Server.Connected += Server_Connected;
