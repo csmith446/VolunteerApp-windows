@@ -68,7 +68,7 @@ namespace VolunteerAppServer
 
         private void ControlButton_Click(object sender, EventArgs e)
         {
-            if(ControlButton.Text == "Start")
+            if (ControlButton.Text == "Start")
             {
                 Server.Start();
                 LogMessage(">> Server Started");

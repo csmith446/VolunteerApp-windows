@@ -13,7 +13,8 @@ namespace VolunteerAppServer
     {
         //todo: clean up/consolidate this mess
         private const string TRUE = "1", FALSE = "0";
-        private const string CONNECTION_STRING = @"Data Source=..\..\Resources\volunteer_db.sqlite;Version=3;";
+        //private const string CONNECTION_STRING = @"Data Source=..\..\Resources\volunteer_db.sqlite;Version=3;";
+        private const string CONNECTION_STRING = @"Data Source=.\Resources\volunteer_db.sqlite;Version=3;";
 
         /// <summary>
         /// Gets the SQLite Connection for the database manager class methods.
