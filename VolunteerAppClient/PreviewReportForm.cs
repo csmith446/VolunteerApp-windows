@@ -13,36 +13,14 @@ namespace VolunteerAppClient
 {
     public partial class PreviewReportForm : Form
     {
-        private const string REGISTERED_EVENTS = "UserRegisteredReport_";
-        private const string USER_SCHEDULE = "UserEventSchedule_";
-        private const string ADMIN_REPORT = "AdminReport_";
-        private const int URR = 0, UER = 1, ARR = 2;
-
         private string CurrentReport;
-
-        public PreviewReportForm(int mode)
+        public PreviewReportForm(string path)
         {
             InitializeComponent();
 
-            var path = "";
-            switch(mode)
-            {
-                case URR:
-                    path = REGISTERED_EVENTS + DateTime.Now.ToString("MMddyyyy") + ".html";
-                    break;
-                case UER:
-                    path = USER_SCHEDULE + DateTime.Now.ToString("MMddyyyy") + ".html";
-                    break;
-                case ARR:
-                    path = ADMIN_REPORT + DateTime.Now.ToString("MMddyyyy") + ".html";
-                    break;
-            }
-
-            this.Text = this.Text.Replace("[file]", path);
-            var curDir = Directory.GetCurrentDirectory();
-
-            CurrentReport = string.Format("{0}/{1}", curDir, path);
-            ReportViewerBrowser.Url = new Uri(string.Format("file:///{0}/{1}", curDir, path));
+            CurrentReport = path;
+            this.Text = this.Text.Replace("[file]", new FileInfo(path).Name);
+            ReportViewerBrowser.Url = new Uri(string.Format("file:///{0}", path));
         }
 
         private void PrintReport()

@@ -8,5 +8,6 @@ namespace VolunteerAppCommonLib
     {
         //methods for the server to call on the client
         void PushDatabaseChanges(List<EventInfo> events, List<UserInfo> users);
+        void ServerShutDown();
     }
 }

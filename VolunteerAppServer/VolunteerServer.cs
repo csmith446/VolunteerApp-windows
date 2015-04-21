@@ -25,9 +25,6 @@ namespace VolunteerAppServer
             ServerSvc = new ServerService(this);
 
             Server.AddService<IVolunteerServer, ServerService>(ServerSvc);
-            Server.ClientConnected += Server_ClientConnected;
-            Server.ClientDisconnected += Server_ClientDisconnected;
-
         }
 
         private delegate void LogMessageCallBack(string msg);
@@ -48,22 +45,13 @@ namespace VolunteerAppServer
 
         private void CloseServer()
         {
-            //close or hide the window
+            ServerSvc.DisconnectAllClients();
+            this.Close();
         }
 
         private void ShowAboutWindow()
         {
             //show about window
-        }
-
-        void Server_ClientDisconnected(object sender, ServiceClientEventArgs e)
-        {
-            //LogMessage("Connection ended");
-        }
-
-        void Server_ClientConnected(object sender, ServiceClientEventArgs e)
-        {
-            //LogMessage("Connection requested...");
         }
 
         private void ControlButton_Click(object sender, EventArgs e)

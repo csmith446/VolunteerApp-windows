@@ -302,9 +302,17 @@ namespace VolunteerAppClient
             this.Close();
         }
 
+        private bool LostServer = false;
+        public void ServerLostConnection()
+        {
+            UserLoggedOut = true;
+            LostServer = true;
+        }
+
         private void MainWindow_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Client.Disconnect();
+            if(!LostServer)
+                Client.Disconnect();
 
             if (UserLoggedOut)
                 LoginForm.Show();
@@ -445,8 +453,8 @@ namespace VolunteerAppClient
             if (GenerateScheduleCheckBox.Checked)
             {
                 var events = EventList.FindAll(x => eventIds.Contains(x.Id)).ToArray();
-                HtmlBuilder.GenerateRegisteredReport(events, UserList);
-                var previewForm = new PreviewReportForm(0);
+                var path = HtmlBuilder.GenerateRegisteredReport(events, UserList);
+                var previewForm = new PreviewReportForm(path);
                 previewForm.ShowDialog();
             }
             else
@@ -837,8 +845,8 @@ namespace VolunteerAppClient
                 EventList.FindAll(x => CurrentUser.RegisteredEvents.Contains(x.Id)).ToArray() :
                 EventList.FindAll(x => CurrentUser.RegisteredEvents.Contains(x.Id) && !CurrentUser.CreatedEvents.Contains(x.Id)).ToArray();
 
-            HtmlBuilder.GenerateUserSchedule(CurrentUser, events, UserList);
-            var previewForm = new PreviewReportForm(1);
+            var path = HtmlBuilder.GenerateUserSchedule(CurrentUser, events, UserList);
+            var previewForm = new PreviewReportForm(path);
             previewForm.ShowDialog();
         }
 
@@ -872,8 +880,8 @@ namespace VolunteerAppClient
 
         private void AdminGnerateReportButton_Click(object sender, EventArgs e)
         {
-            HtmlBuilder.GenerateAdminReport(UserList, EventList);
-            var previewForm = new PreviewReportForm(2);
+            var path = HtmlBuilder.GenerateAdminReport(UserList, EventList);
+            var previewForm = new PreviewReportForm(path);
             previewForm.ShowDialog();
         }
 

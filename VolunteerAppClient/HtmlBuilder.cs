@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows.Forms;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,7 @@ namespace VolunteerAppClient
         private const string REGISTERED_EVENTS = "UserRegisteredReport_";
         private const string USER_SCHEDULE = "UserEventSchedule_";
         private const string ADMIN_REPORT = "AdminReport_";
+        private static string WorkingDir = Application.StartupPath;
 
         private const string REPORTS_CSS = "<style type='text/css'>table{margin-left:auto;font-size:small;" +
             "margin-right:auto;width:100%;font-family:sans-serif;}td, th{padding:5px;}" +
@@ -30,10 +32,9 @@ namespace VolunteerAppClient
             return eventList.Find(x => x.Id == eventId) as EventInfo;
         }
 
-        public static void GenerateRegisteredReport(EventInfo[] events, List<UserInfo> userList)
+        public static string GenerateRegisteredReport(EventInfo[] events, List<UserInfo> userList)
         {
-            string path = string.Format("{0}/{1}", Directory.GetCurrentDirectory(),
-                REGISTERED_EVENTS + DateTime.Now.ToString("MMddyyyy") + ".html");
+            string path = WorkingDir + "\\" + REGISTERED_EVENTS + DateTime.Now.ToString("MMddyyyy") + ".html";
             if (File.Exists(path))
             {
                 File.Delete(path);
@@ -61,12 +62,14 @@ namespace VolunteerAppClient
                 }
                 stream.Write("</table></body></html>");
             }
+
+            return path;
         }
 
-        public static void GenerateAdminReport(List<UserInfo> userList, List<EventInfo> eventList)
+        public static string GenerateAdminReport(List<UserInfo> userList, List<EventInfo> eventList)
         {
-            string path = string.Format("{0}/{1}", Directory.GetCurrentDirectory(),
-                ADMIN_REPORT + DateTime.Now.ToString("MMddyyyy") + ".html"); if (File.Exists(path))
+            string path = WorkingDir + "\\" + ADMIN_REPORT + DateTime.Now.ToString("MMddyyyy") + ".html";
+
             {
                 File.Delete(path);
             }
@@ -113,12 +116,14 @@ namespace VolunteerAppClient
                 }
                 stream.Write("</table></body></html>");
             }
+
+            return path;
         }
 
-        public static void GenerateUserSchedule(UserInfo user, EventInfo[] events, List<UserInfo> userList)
+        public static string GenerateUserSchedule(UserInfo user, EventInfo[] events, List<UserInfo> userList)
         {
-            string path = string.Format("{0}/{1}", Directory.GetCurrentDirectory(),
-                USER_SCHEDULE + DateTime.Now.ToString("MMddyyyy") + ".html");
+            string path = WorkingDir + "\\" + USER_SCHEDULE + DateTime.Now.ToString("MMddyyyy") + ".html";
+
             if (File.Exists(path))
             {
                 File.Delete(path);
@@ -152,6 +157,8 @@ namespace VolunteerAppClient
                 }
                 stream.Write("</table></body></html>");
             }
+
+            return path;
         }
     }
 }

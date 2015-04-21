@@ -1,4 +1,7 @@
-﻿using System;
+﻿#define DEBUG
+using System;
+using System.IO;
+using System.Net;
 using System.Collections.Generic;
 using Hik.Communication.Scs.Communication.EndPoints.Tcp;
 using Hik.Communication.ScsServices.Client;
@@ -9,18 +12,23 @@ namespace VolunteerAppClient
     internal class ClientService : IVolunteerClient
     {
         private static IScsServiceClient<IVolunteerServer> Server;
+#if DEBUG
+        private const string SERVER_IP = "10.0.0.2";
+#else
+        private const string SERVER_IP = "76.20.234.235";
+#endif
+        private const int SERVER_PORT = 31415;
         private LoginForm LoginWindow;
         private MainVolunteerForm MainWindow;
 
         public ClientService(LoginForm Login)
         {
             LoginWindow = Login;
-            Server = ScsServiceClientBuilder.CreateClient<IVolunteerServer>(
-                new ScsTcpEndPoint("76.20.234.235", 31415), this);
-            Server.ConnectTimeout = 5000;
 
-            Server.Connected += Server_Connected;
-            Server.Disconnected += Server_Disconnected;
+            Server = ScsServiceClientBuilder.CreateClient<IVolunteerServer>(
+                new ScsTcpEndPoint(SERVER_IP, SERVER_PORT), this);
+            Server.ConnectTimeout = 1000;
+            Server.Timeout = 5000;
         }
 
         public bool LogInUser(string username, string password, out UserInfo user)
@@ -36,16 +44,6 @@ namespace VolunteerAppClient
 
             Server.Disconnect();
             return false;
-        }
-
-        private void Server_Disconnected(object sender, EventArgs e)
-        {
-            //do something
-        }
-
-        private void Server_Connected(object sender, EventArgs e)
-        {
-            //do something
         }
 
         public void Disconnect()
@@ -129,6 +127,11 @@ namespace VolunteerAppClient
         public void PushDatabaseChanges(List<EventInfo> events, List<UserInfo> users)
         {
             MainWindow.UpdateLists(events, users);
+        }
+
+        public void ServerShutDown()
+        {
+
         }
         #endregion
 

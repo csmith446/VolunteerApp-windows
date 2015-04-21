@@ -1,6 +1,4 @@
-﻿#define DEBUG
-using System;
-using System.IO;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -17,16 +15,11 @@ namespace VolunteerAppClient
 {
     public partial class LoginForm : Form
     {
-        //private IScsServiceClient<IVolunteerServer> Server;
         private ClientService Client;
 
         public LoginForm()
         {
             InitializeComponent();
-#if DEBUG
-            EmailAddressTextBox.Text = "csmith34@spsu.edu";
-            PasswordTextBox.Text = "Chaeson1";
-#endif
             Client = new ClientService(this);
         }
 
@@ -40,42 +33,35 @@ namespace VolunteerAppClient
 
         private void BeginUserLogin()
         {
-            //try
-            //{
-                string username = EmailAddressTextBox.Text.Trim().ToLower();
-                string password = PasswordTextBox.Text.Trim();
-                UserInfo user = null;
+            string username = EmailAddressTextBox.Text.Trim().ToLower();
+            string password = PasswordTextBox.Text.Trim();
+            UserInfo user = null;
 
-                if (ValidateForm(username, password))
+            if (ValidateForm(username, password))
+            {
+                if (Client.LogInUser(username, password, out user))
                 {
-                    if (Client.LogInUser(username, password,out user))
-                    {
-                        var mainForm = new MainVolunteerForm(user, this, Client);
-                        ErrorMessageLabel.Visible = false;
+                    var mainForm = new MainVolunteerForm(user, this, Client);
+                    ErrorMessageLabel.Visible = false;
 
-                        this.Hide();
-                        mainForm.ShowDialog();
-                    }
-                    else
-                    {
-                        ErrorMessageLabel.Text = "The email and password do not match.";
-                        ErrorMessageLabel.Visible = true;
-                    }
+                    this.Hide();
+                    mainForm.ShowDialog();
                 }
                 else
                 {
-                    ErrorMessageLabel.Text = "The email and password cannot be blank.";
+                    ErrorMessageLabel.Text = "The email and password do not match.";
                     ErrorMessageLabel.Visible = true;
                 }
+            }
+            else
+            {
+                ErrorMessageLabel.Text = "The email and password cannot be blank.";
+                ErrorMessageLabel.Visible = true;
+            }
 
-                EmailAddressTextBox.Clear();
-                PasswordTextBox.Clear();
-                EmailAddressTextBox.Focus();
-            //}
-            //catch
-            //{
-            //    MessageBox.Show("Oops! The server appears to be down.");
-            //}
+            EmailAddressTextBox.Clear();
+            PasswordTextBox.Clear();
+            EmailAddressTextBox.Focus();
         }
 
         private void LoginButton_Click(object sender, EventArgs e)

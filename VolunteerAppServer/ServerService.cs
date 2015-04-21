@@ -37,6 +37,14 @@ namespace VolunteerAppServer
         }
         #endregion
 
+        public void DisconnectAllClients()
+        {
+            foreach(var client in ConnectedClients.GetAllItems())
+            {
+                client.ClientProxy.ServerShutDown();
+            }
+        }
+
         public void GetDataFromDatabase()
         {
             UserInfoList = DatabaseManager.GetAllUsersFromDb();

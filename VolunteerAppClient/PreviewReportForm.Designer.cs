@@ -43,7 +43,7 @@
             this.ReportViewerBrowser.Location = new System.Drawing.Point(0, 0);
             this.ReportViewerBrowser.MinimumSize = new System.Drawing.Size(20, 20);
             this.ReportViewerBrowser.Name = "ReportViewerBrowser";
-            this.ReportViewerBrowser.Size = new System.Drawing.Size(874, 767);
+            this.ReportViewerBrowser.Size = new System.Drawing.Size(874, 733);
             this.ReportViewerBrowser.TabIndex = 0;
             this.ReportViewerBrowser.WebBrowserShortcutsEnabled = false;
             // 
