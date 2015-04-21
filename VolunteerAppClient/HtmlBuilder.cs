@@ -126,14 +126,15 @@ namespace VolunteerAppClient
 
             using (StreamWriter stream = File.CreateText(path))
             {
-                var name = string.Format("{0} {1}", user.FullName.Item1, user.FullName.Item2);
+                var userName = string.Format("{0} {1}", user.FullName.Item1, user.FullName.Item2);
                 stream.Write("<!DOCTYPE html><html>");
                 stream.Write(REPORTS_CSS);
                 stream.Write("<body><table cellspacing='0' cellpadding='3'><tr class='title'>" +
-                             "<th colspan='5'>Event Schedule for " + name + "</th></tr>");
+                             "<th colspan='5'>Event Schedule for " + userName + "</th></tr>");
                 foreach (var evt in events)
                 {
                     var creator = GetUserFromId(evt.CreatorId, userList);
+                    var name = string.Format("{0} {1}", creator.FullName.Item1, creator.FullName.Item2);
                     var time = evt.StartTime.ToString("hh:mm tt") + " - " + evt.EndTime.ToString("hh:mm tt");
 
                     if (!evt.Current)
