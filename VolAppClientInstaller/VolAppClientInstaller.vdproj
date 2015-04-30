@@ -27,44 +27,44 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_2CEB86891D20AA645258F2E9E938E806"
+        "OwnerKey" = "8:_3492C323E2BB5C966B431A4A8FD04E26"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_2CEB86891D20AA645258F2E9E938E806"
+        "OwnerKey" = "8:_1E514AF98B6247BD8C3D3E5D520C4DB9"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_2F26ADC04A4148699753573FD9519802"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_CB6765D9F2F04533CD2191FD496C8DB8"
-        "OwnerKey" = "8:_1E514AF98B6247BD8C3D3E5D520C4DB9"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_CBD506AF7E3E7F9687CDA626C5EACEFC"
-        "OwnerKey" = "8:_CB6765D9F2F04533CD2191FD496C8DB8"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_CBD506AF7E3E7F9687CDA626C5EACEFC"
+        "MsmKey" = "8:_3492C323E2BB5C966B431A4A8FD04E26"
         "OwnerKey" = "8:_1E514AF98B6247BD8C3D3E5D520C4DB9"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_2CEB86891D20AA645258F2E9E938E806"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_3492C323E2BB5C966B431A4A8FD04E26"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
         "OwnerKey" = "8:_1E514AF98B6247BD8C3D3E5D520C4DB9"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_CB6765D9F2F04533CD2191FD496C8DB8"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_CBD506AF7E3E7F9687CDA626C5EACEFC"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -164,7 +164,7 @@
         {
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_1481A2F5A9AC44A586ABC047CF25897C"
             {
-            "SourcePath" = "8:..\\VolunteerAppClient\\Resources\\AboutImage.png"
+            "SourcePath" = "8:\\\\psf\\Home\\Documents\\Visual Studio 2013\\Projects\\VolunteerApp-windows\\VolunteerApp-windows\\VolunteerAppClient\\Resources\\AboutImage.png"
             "TargetName" = "8:AboutImage.png"
             "Tag" = "8:"
             "Folder" = "8:_188B5341912C4C9686B467401E2C9AC6"
@@ -182,40 +182,20 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_2F26ADC04A4148699753573FD9519802"
-            {
-            "SourcePath" = "8:..\\VolunteerAppClient\\Resources\\IconImage.ico"
-            "TargetName" = "8:IconImage.ico"
-            "Tag" = "8:"
-            "Folder" = "8:_188B5341912C4C9686B467401E2C9AC6"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_CB6765D9F2F04533CD2191FD496C8DB8"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_2CEB86891D20AA645258F2E9E938E806"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:VolunteerAppCommonLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Scs, Version=1.1.0.1, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_CB6765D9F2F04533CD2191FD496C8DB8"
+                    "_2CEB86891D20AA645258F2E9E938E806"
                     {
-                    "Name" = "8:VolunteerAppCommonLib.dll"
+                    "Name" = "8:Scs.dll"
                     "Attributes" = "3:512"
                     }
                 }
-            "SourcePath" = "8:VolunteerAppCommonLib.dll"
+            "SourcePath" = "8:Scs.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_D770F8CA4EC84CCA9C1A75B0FB4D15ED"
@@ -233,20 +213,40 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_CBD506AF7E3E7F9687CDA626C5EACEFC"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_2F26ADC04A4148699753573FD9519802"
+            {
+            "SourcePath" = "8:\\\\psf\\Home\\Documents\\Visual Studio 2013\\Projects\\VolunteerApp-windows\\VolunteerApp-windows\\VolunteerAppClient\\Resources\\IconImage.ico"
+            "TargetName" = "8:IconImage.ico"
+            "Tag" = "8:"
+            "Folder" = "8:_188B5341912C4C9686B467401E2C9AC6"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_3492C323E2BB5C966B431A4A8FD04E26"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Scs, Version=1.1.0.1, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:VolunteerAppCommonLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_CBD506AF7E3E7F9687CDA626C5EACEFC"
+                    "_3492C323E2BB5C966B431A4A8FD04E26"
                     {
-                    "Name" = "8:Scs.dll"
+                    "Name" = "8:VolunteerAppCommonLib.dll"
                     "Attributes" = "3:512"
                     }
                 }
-            "SourcePath" = "8:Scs.dll"
+            "SourcePath" = "8:VolunteerAppCommonLib.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_D770F8CA4EC84CCA9C1A75B0FB4D15ED"
@@ -332,7 +332,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Volunteer App"
         "ProductCode" = "8:{964B6B7B-6348-48BC-8CD1-A1D19A4A30EB}"
-        "PackageCode" = "8:{BA913597-490A-4B9B-9A07-82E1FDFC92A3}"
+        "PackageCode" = "8:{78B78597-B121-4099-B26D-41DF2F98D962}"
         "UpgradeCode" = "8:{0FB0A6B0-35F0-464A-895C-16E1266F877A}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -881,7 +881,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_1E514AF98B6247BD8C3D3E5D520C4DB9"
             {
-            "SourcePath" = "8:..\\VolunteerAppClient\\obj\\Debug\\VolunteerAppClient.exe"
+            "SourcePath" = "8:\\\\psf\\Home\\Documents\\Visual Studio 2013\\Projects\\VolunteerApp-windows\\VolunteerApp-windows\\VolunteerAppClient\\obj\\x64\\Release\\VolunteerAppClient.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_D770F8CA4EC84CCA9C1A75B0FB4D15ED"
